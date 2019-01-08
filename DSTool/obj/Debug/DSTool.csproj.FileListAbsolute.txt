@@ -1,0 +1,17 @@
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\DSTool.exe.config
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\DSTool.exe
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\DSTool.pdb
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Dapper.dll
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Google.Protobuf.dll
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\MySql.Data.dll
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Dapper.xml
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Google.Protobuf.xml
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\MySql.Data.xml
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csprojAssemblyReference.cache
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.MSTool.resources
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.Properties.Resources.resources
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.GenerateResource.cache
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.CopyComplete
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.exe
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.pdb
