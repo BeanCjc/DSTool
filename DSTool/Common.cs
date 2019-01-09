@@ -58,7 +58,7 @@ namespace DSTool
                 var apipwd = "@acewill";
                 MD5 mD5 = MD5.Create();
                 var sign = Encoding.UTF8.GetString(mD5.ComputeHash(Encoding.UTF8.GetBytes(front + apipwd)));
-                var requestData = $"front:{front}&sign:{sign}";
+                var requestData = $"front={front}&sign={sign}";
                 if (!string.IsNullOrEmpty(paramData))
                 {
                     requestData += $"&{paramData}";
