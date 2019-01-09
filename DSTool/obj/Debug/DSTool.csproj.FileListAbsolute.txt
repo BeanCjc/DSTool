@@ -15,3 +15,6 @@ C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.CoreCo
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.CopyComplete
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.exe
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.pdb
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Newtonsoft.Json.pdb
+C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Newtonsoft.Json.xml

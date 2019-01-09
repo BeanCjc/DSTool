@@ -42,6 +42,9 @@
     <Reference Include="MySql.Data, Version=8.0.13.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.8.0.13\lib\net452\MySql.Data.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -66,6 +69,7 @@
     <Compile Include="ConfigInfo.cs" />
     <Compile Include="DbData\Area_default.cs" />
     <Compile Include="DbData\Brand_default.cs" />
+    <Compile Include="DbData\DA_FD.cs" />
     <Compile Include="DbData\Dept_default.cs" />
     <Compile Include="DbData\SyncInfo.cs" />
     <Compile Include="DSTool.cs">
@@ -76,7 +80,11 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestEntity\C_department.cs" />
+    <Compile Include="RequestEntity\ResponseResult.cs" />
+    <Compile Include="RequestEntity\Sls_area.cs" />
     <Compile Include="RequestEntity\Sls_brand.cs" />
+    <Compile Include="RequestEntity\Sls_shop.cs" />
     <EmbeddedResource Include="DSTool.resx">
       <DependentUpon>DSTool.cs</DependentUpon>
     </EmbeddedResource>

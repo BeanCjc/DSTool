@@ -81,6 +81,19 @@ namespace DSTool
         public string Apiurl_addordermain { get; set; }
         public string Apiurl_addorderdetail { get; set; }
 
+        public string Apiurl_editbrand { get; set; }
+        public string Apiurl_editarea { get; set; }
+        public string Apiurl_editmealtime { get; set; }
+        public string Apiurl_editdept { get; set; }
+        public string Apiurl_editstore { get; set; }
+        public string Apiurl_editunit { get; set; }
+        public string Apiurl_editdishtype { get; set; }
+        public string Apiurl_editdish { get; set; }
+        public string Apiurl_editpayway { get; set; }
+        public string Apiurl_edituser { get; set; }
+        public string Apiurl_editordermain { get; set; }
+        public string Apiurl_editorderdetail { get; set; }
+
         public string Brand_table { get; set; }
         public string Brand_name { get; set; }
         public string Brand_status { get; set; }

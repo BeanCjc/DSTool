@@ -12,6 +12,7 @@ namespace DSTool.DbData
         public int Brand_status { get; set; }
         public string Brand_subject { get; set; }
         public int Brand_posid { get; set; }
-
+        public DateTime CreateTime { get; set; }
+        public DateTime LastUpdateTime { get; set; }
     }
 }

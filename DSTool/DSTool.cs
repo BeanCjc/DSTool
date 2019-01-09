@@ -15,6 +15,7 @@ using System.IO;
 using DSTool.RequestEntity;
 using System.Net.Http;
 using System.Net;
+using Newtonsoft.Json;
 
 namespace DSTool
 {
@@ -81,7 +82,9 @@ namespace DSTool
                                                               `brand_name` varchar(255) DEFAULT NULL COMMENT '品牌名称',
                                                               `brand_status` varchar(255) DEFAULT NULL COMMENT '状态 1:有效 0:无效',
                                                               `brand_subject` varchar(255) DEFAULT NULL COMMENT '编码',
-                                                              `brand_posid` varchar(255) DEFAULT NULL COMMENT 'pos ID'
+                                                              `brand_posid` varchar(255) DEFAULT NULL COMMENT 'pos ID',
+                                                              `createtime` datetime(6) DEFAULT NULL COMMENT '创建时间',
+                                                              `lastupdatetime` datetime(6) DEFAULT NULL COMMENT '修改时间'
                                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
             var paramBrand = new DynamicParameters();
             paramBrand.Add("?tablename", ConfigInfo.Brand_table);
@@ -93,7 +96,9 @@ namespace DSTool
                                                               `area_level` varchar(255) DEFAULT NULL COMMENT '区域层级',
                                                               `area_status` varchar(255) DEFAULT NULL COMMENT '状态 1:有效 0:无效',
                                                               `area_subject` varchar(255) DEFAULT NULL COMMENT '编码',
-                                                              `area_posid` varchar(255) DEFAULT NULL COMMENT 'pos id'
+                                                              `area_posid` varchar(255) DEFAULT NULL COMMENT 'pos id',
+                                                              `createtime` datetime(6) DEFAULT NULL COMMENT '创建时间',
+                                                              `lastupdatetime` datetime(6) DEFAULT NULL COMMENT '修改时间'
                                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
             var paramArea = new DynamicParameters();
             paramArea.Add("?tablename", ConfigInfo.Area_table);
@@ -106,7 +111,9 @@ namespace DSTool
                                                               `dept_sequence` varchar(255) DEFAULT NULL COMMENT '部门顺序',
                                                               `dept_subject` varchar(255) DEFAULT NULL COMMENT '编码',
                                                               `dept_brand` varchar(255) DEFAULT NULL COMMENT '品牌',
-                                                              `dept_posid` varchar(255) DEFAULT NULL COMMENT 'pos id'
+                                                              `dept_posid` varchar(255) DEFAULT NULL COMMENT 'pos id',
+                                                              `createtime` datetime(6) DEFAULT NULL COMMENT '创建时间',
+                                                              `lastupdatetime` datetime(6) DEFAULT NULL COMMENT '修改时间'
                                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
             var paramDept = new DynamicParameters();
             paramDept.Add("?tablename", ConfigInfo.Dept_table);
@@ -192,7 +199,6 @@ namespace DSTool
             }
         }
 
-
         void InitData()
         {
             var brand_name = ConfigInfo.Brand_name;
@@ -230,24 +236,29 @@ namespace DSTool
             if (brandFlag || areaFlag || deptFlag)
             {
                 var selectBrandSql = @"select brand_name,brand_status,brand_subject,brand_posid from brand_default where brand_name=?brand_name and brand_status=?brand_status and brand_subject=?brand_subject and brand_posid=?brand_posid limit 1";
-                var insertBrandSql = @"insert into brand_default(brand_name,brand_status,brand_subject,brand_posid) values(?brand_name,?brand_status,?brand_subject,?brand_posid)";
+                var insertBrandSql = @"insert into brand_default(brand_name,brand_status,brand_subject,brand_posid,createtime,lastupdatetime) values(?brand_name,?brand_status,?brand_subject,?brand_posid,?createtime,?lastupdatetime)";
                 var paramBrand = new DynamicParameters();
+                var dateTime = DateTime.Now;
                 paramBrand.Add("?brand_name", brand_name);
                 paramBrand.Add("?brand_status", brand_status);
                 paramBrand.Add("?brand_subject", brand_subject);
                 paramBrand.Add("?brand_posid", brand_posid);
+                paramBrand.Add("?createtime", dateTime);
+                paramBrand.Add("?lastupdatetime", dateTime);
 
                 var selectAreaSql = @"select area_name,area_level,area_status,area_subject,area_posid from area_default where area_name=?area_name and area_level=?area_level and area_status=?area_status and area_subject=?area_subject and area_posid=?area_posid limit 1";
-                var insertAreaSql = @"insert into area_default(area_name,area_level,area_status,area_subject,area_posid) values(?area_name,?area_level,?area_status,?area_subject,?area_posid)";
+                var insertAreaSql = @"insert into area_default(area_name,area_level,area_status,area_subject,area_posid,createtime,lastupdatetime) values(?area_name,?area_level,?area_status,?area_subject,?area_posid,?createtime,?lastupdatetime)";
                 var paramArea = new DynamicParameters();
                 paramArea.Add("?area_name", area_name);
                 paramArea.Add("?area_level", area_level);
                 paramArea.Add("?area_status", area_status);
                 paramArea.Add("?area_subject", area_subject);
                 paramArea.Add("?area_posid", area_posid);
+                paramArea.Add("?createtime", dateTime);
+                paramArea.Add("?lastupdatetime", dateTime);
 
                 var selectDeptSql = @"select dept_name,dept_alias,dept_status,dept_sequence,dept_subject,dept_brand,dept_posid from dept_default where dept_name=?dept_name and dept_alias=?dept_alias and dept_status=?dept_status and dept_sequence=?dept_sequence and dept_subject=?dept_subject and dept_brand=?dept_brand and dept_posid=?dept_posid limit 1";
-                var insertDeptSql = @"insert into dept_default(dept_name,dept_alias,dept_status,dept_sequence,dept_subject,dept_brand,dept_posid) values(?dept_name,?dept_alias,?dept_status,?dept_sequence,?dept_subject,?dept_brand,?dept_posid)";
+                var insertDeptSql = @"insert into dept_default(dept_name,dept_alias,dept_status,dept_sequence,dept_subject,dept_brand,dept_posid,createtime,lastupdatetime) values(?dept_name,?dept_alias,?dept_status,?dept_sequence,?dept_subject,?dept_brand,?dept_posid,?createtime,?lastupdatetime)";
                 var paramDept = new DynamicParameters();
                 paramDept.Add("?dept_name", dept_name);
                 paramDept.Add("?dept_alias", dept_alias);
@@ -256,6 +267,9 @@ namespace DSTool
                 paramDept.Add("?dept_subject", dept_subject);
                 paramDept.Add("?dept_brand", dept_brand);
                 paramDept.Add("?dept_posid", dept_posid);
+                paramDept.Add("?createtime", dateTime);
+                paramDept.Add("?lastupdatetime", dateTime);
+
                 try
                 {
 
@@ -324,72 +338,403 @@ namespace DSTool
             }
         }
 
-        bool brand_sync = false;//true 为正在同步中
+        bool brand_sync = false;//true:正在同步中
         private void btn_Brand_Click(object sender, EventArgs e)
         {
             //防止重复点击同步
             //有没有数据可同步，有则整理成list用API传送
             //写同步记录
-            if (brand_sync)
+            Task.Run(() =>
             {
-                MessageBox.Show("数据同步中，请勿重复点击!", "Tips");
-            }
-            else
-            {
-                var getLastSyncInfoSql = @"select tablename,lastupdatetime from syncinfo where tablename='brand_defalut' limit 1";
-                var getDataSql = @"select brand_name,brand_status,brand_subject,brand_posid from brand_default where lastdatetime>?lastdatetime";
-                var param = new DynamicParameters();
-                using (var db = new MySqlConnection(ConfigInfo.Mysql_connectionstring))
+                //先不管线程安全了,这样也能跑起来
+                if (brand_sync)
                 {
-                    var getLastSyncInfo = db.QueryFirstOrDefault<SyncInfo>(getLastSyncInfoSql);
-                    if (getLastSyncInfo != null)
+                    MessageBox.Show("对不起! 品牌数据同步中,请勿重复点击!", "Tips");
+                }
+                else
+                {
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌数据同步中,请耐心等待......\r\n"));
+                    var getLastSyncInfoSql = @"select tablename,lastupdatetime from syncinfo where tablename='brand_defalut' limit 1";
+                    var getDataSql = @"select brand_name,brand_status,brand_subject,brand_posid,createtime,lastupdatetime from brand_default where lastupdatetime>=?lastupdatetime";
+                    var param = new DynamicParameters();
+                    using (var db = new MySqlConnection(ConfigInfo.Mysql_connectionstring))
                     {
-
-                        param.Add("?lastdatetime", getLastSyncInfo.LastUpdateTime);
-                        var getData = db.Query<Brand_default>(getDataSql, param).ToList();
-                        var dataList = new List<Sls_brand>();
-                        foreach (var item in getData)
+                        try
                         {
-                            var data = new Sls_brand() { Brandname = item.Brand_name, Status = item.Brand_status, Subject = item.Brand_subject, Cbid = item.Brand_posid };
-                            dataList.Add(data);
+                            var getLastSyncInfo = db.QueryFirstOrDefault<SyncInfo>(getLastSyncInfoSql);
+                            if (getLastSyncInfo != null)
+                            {
+                                param.Add("?lastupdatetime", getLastSyncInfo.LastUpdateTime);
+                                var getData = db.Query<Brand_default>(getDataSql, param).ToList();
+                                //获取待同步的数据,包含新增和修改,不含删除
+                                var dataList_add = new List<Sls_brand>();
+                                var dataList_update = new List<Sls_brand>();
+                                foreach (var item in getData)
+                                {
+                                    var data = new Sls_brand() { BrandName = item.Brand_name, Status = item.Brand_status, Subject = item.Brand_subject, CbId = item.Brand_posid };
+                                    if (item.CreateTime == item.LastUpdateTime)
+                                    {
+                                        dataList_add.Add(data);
+                                    }
+                                    else
+                                    {
+                                        dataList_update.Add(data);
+                                    }
+                                }
+                                if (dataList_add.Count > 0 || dataList_update.Count > 0)
+                                {
+                                    //先发起修改的请求，再发起新增的请求，目的分为三种情况.
+                                    //情况1:修改失败,不执行新增的请求;
+                                    //情况二:修改成功，新增的请求失败,不写更新记录表,下次将再次修改数据并添加数据;
+                                    //情况三:修改和新增都成功,那就更新更新记录表
+
+                                    //请求接口同步数据 edit
+                                    bool updateFlag = true;
+                                    if (dataList_update.Count > 0)
+                                    {
+                                        var paramData_update = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_update = Common.Post(ConfigInfo.Apiurl_editbrand, paramData_update);
+                                        if (result_update == null || result_update.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                            //rtxt_message.Text += $"品牌数据修改失败，原因:{result_update?.Msg}\r\n";
+                                            updateFlag = false;
+                                        }
+                                    }
+
+                                    bool addFlag = true;
+                                    if (dataList_add.Count > 0 && updateFlag)
+                                    {
+                                        //请求接口同步数据 add
+                                        //var url = ConfigInfo.Apiurl_addbrand + "?do=brand&type=add&apikey=sign";
+                                        var paramData = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_add = Common.Post(ConfigInfo.Apiurl_addbrand, paramData);
+                                        if (result_add == null || result_add.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                            //rtxt_message.Text += $"品牌数据新增失败，原因:{result_add?.Msg}\r\n";
+                                            addFlag = false;
+                                        }
+                                    }
+
+                                    //数据同步成功,写更新记录表,若此次没有数据同步也将更新该表,下次就不用从原来的时间再次同步(一般不会有这种情况)
+                                    if (updateFlag && addFlag)
+                                    {
+                                        var updateLastSyncSql = @"update syncinfo set lastupdatetime=?lastupdatetime where tablename='brand_default'";
+                                        var paramUpdate = new DynamicParameters();
+                                        paramUpdate.Add("?lastupdatetime", DateTime.Now);
+                                        db.Execute(updateLastSyncSql, paramUpdate);
+                                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌数据同步成功\r\n"));
+                                        //rtxt_message.Text += $"品牌数据同步成功\r\n";
+                                    }
+                                }
+                                else
+                                {
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌无数据同步\r\n"));
+                                }
+                            }
+                            else
+                            {
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"brand_default not in syncinfo\r\n"));
+                                //rtxt_message.Text += "brand_default not in syncinfo\r\n";
+                            }
                         }
-                        if (getData.Count > 0)
+                        catch (Exception ex)
                         {
-                            //请求接口同步数据
-                            var request = WebRequest.CreateHttp(ConfigInfo.Apiurl_addbrand);
-                            request.Method = "POST";
-                            var response = request.GetResponse();
-
-                            var updateLastSyncSql = @"update syncinfo set lastupdatetime=?lastupdatetime";
-                            var paramUpdate = new DynamicParameters();
-                            paramUpdate.Add("?lastupdatetime", DateTime.Now);
-                            db.Execute(updateLastSyncSql, paramUpdate);
-
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInBrand:{ex.Message}\r\n"));
+                            //rtxt_message.Text += $"ExceptionInfoInBrand:{ex.Message}\r\n";
                         }
-                    }
-                    else
-                    {
-                        rtxt_message.Text += "brand_default not in syncinfo\r\n";
+                        finally
+                        {
+                            brand_sync = false;
+                        }
                     }
                 }
-                //同步完成将brand_sync置为false
-                brand_sync = false;
-            }
+            });
         }
 
+        bool area_sync = false;//true:正在同步中
         private void btn_Area_Click(object sender, EventArgs e)
         {
+            Task.Run(() =>
+            {
+                if (area_sync)
+                {
+                    MessageBox.Show("对不起! 区域数据同步中,请勿重复点击!", "Tips");
+                }
+                else
+                {
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"区域数据同步中,请耐心等待......\r\n"));
+                    var getLastSyncInfoSql = @"select tablename,lastupdatetime from syncinfo where tablename='area_defalut' limit 1";
+                    var getDataSql = @"select brand_name,brand_status,brand_subject,brand_posid,createtime,lastupdatetime from area_default where lastupdatetime>=?lastupdatetime";
+                    var param = new DynamicParameters();
+                    using (var db = new MySqlConnection(ConfigInfo.Mysql_connectionstring))
+                    {
+                        try
+                        {
+                            var getLastSyncInfo = db.QueryFirstOrDefault<SyncInfo>(getLastSyncInfoSql);
+                            if (getLastSyncInfo != null)
+                            {
+                                param.Add("?lastupdatetime", getLastSyncInfo.LastUpdateTime);
+                                var getData = db.Query<Area_default>(getDataSql, param).ToList();
+                                var dataList_add = new List<Sls_area>();
+                                var dataList_update = new List<Sls_area>();
+                                foreach (var item in getData)
+                                {
+                                    var data = new Sls_area() { AreaName = item.Area_name, AreaLevel = item.Area_level, Status = item.Area_status, Subject = item.Area_subject, CaId = item.Area_posid };
+                                    if (item.CreateTime == item.LastUpdateTime)
+                                    {
+                                        dataList_add.Add(data);
+                                    }
+                                    else
+                                    {
+                                        dataList_update.Add(data);
+                                    }
+                                }
+                                if (dataList_add.Count > 0 || dataList_update.Count > 0)
+                                {
+                                    bool updateFlag = true;
+                                    if (dataList_update.Count > 0)
+                                    {
+                                        var paramData_update = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_update = Common.Post(ConfigInfo.Apiurl_editarea, paramData_update);
+                                        if (result_update == null || result_update.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 区域数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                            updateFlag = false;
+                                        }
+                                    }
 
+                                    bool addFlag = true;
+                                    if (dataList_add.Count > 0 && updateFlag)
+                                    {
+                                        var paramData = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_add = Common.Post(ConfigInfo.Apiurl_addarea, paramData);
+                                        if (result_add == null || result_add.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 区域数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                            addFlag = false;
+                                        }
+                                    }
+                                    if (updateFlag && addFlag)
+                                    {
+                                        var updateLastSyncSql = @"update syncinfo set lastupdatetime=?lastupdatetime where tablename='area_default'";
+                                        var paramUpdate = new DynamicParameters();
+                                        paramUpdate.Add("?lastupdatetime", DateTime.Now);
+                                        db.Execute(updateLastSyncSql, paramUpdate);
+                                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"区域数据同步成功\r\n"));
+                                    }
+                                }
+                                else
+                                {
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"区域无数据同步\r\n"));
+                                }
+                            }
+                            else
+                            {
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"area_default not in syncinfo\r\n"));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInArea:{ex.Message}\r\n"));
+                        }
+                        finally
+                        {
+                            area_sync = false;
+                        }
+                    }
+                }
+            });
         }
 
+        bool dept_sync = false;//true:正在同步中
         private void btn_Dept_Click(object sender, EventArgs e)
         {
+            Task.Run(() =>
+            {
+                if (dept_sync)
+                {
+                    MessageBox.Show("对不起! 部门数据同步中,请勿重复点击!", "Tips");
+                }
+                else
+                {
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"部门数据同步中,请耐心等待......\r\n"));
+                    var getLastSyncInfoSql = @"select tablename,lastupdatetime from syncinfo where tablename='dept_defalut' limit 1";
+                    var getDataSql = @"select brand_name,brand_status,brand_subject,brand_posid,createtime,lastupdatetime from dept_default where lastupdatetime>=?lastupdatetime";
+                    var param = new DynamicParameters();
+                    using (var db = new MySqlConnection(ConfigInfo.Mysql_connectionstring))
+                    {
+                        try
+                        {
+                            var getLastSyncInfo = db.QueryFirstOrDefault<SyncInfo>(getLastSyncInfoSql);
+                            if (getLastSyncInfo != null)
+                            {
+                                param.Add("?lastupdatetime", getLastSyncInfo.LastUpdateTime);
+                                var getData = db.Query<Dept_default>(getDataSql, param).ToList();
+                                var dataList_add = new List<C_department>();
+                                var dataList_update = new List<C_department>();
+                                foreach (var item in getData)
+                                {
+                                    var data = new C_department() { Department = item.Dept_name, Alias = item.Dept_alias, Status = item.Dept_status, Seq = item.Dept_sequence, Sno = item.Dept_subject, BId = item.Dept_brand, CdmId = item.Dept_posid };
+                                    if (item.CreateTime == item.LastUpdateTime)
+                                    {
+                                        dataList_add.Add(data);
+                                    }
+                                    else
+                                    {
+                                        dataList_update.Add(data);
+                                    }
+                                }
+                                if (dataList_add.Count > 0 || dataList_update.Count > 0)
+                                {
+                                    bool updateFlag = true;
+                                    if (dataList_update.Count > 0)
+                                    {
+                                        var paramData_update = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_update = Common.Post(ConfigInfo.Apiurl_editdept, paramData_update);
+                                        if (result_update == null || result_update.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 部门数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                            updateFlag = false;
+                                        }
+                                    }
 
+                                    bool addFlag = true;
+                                    if (dataList_add.Count > 0 && updateFlag)
+                                    {
+                                        var paramData = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_add = Common.Post(ConfigInfo.Apiurl_adddept, paramData);
+                                        if (result_add == null || result_add.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 部门数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                            addFlag = false;
+                                        }
+                                    }
+                                    if (updateFlag && addFlag)
+                                    {
+                                        var updateLastSyncSql = @"update syncinfo set lastupdatetime=?lastupdatetime where tablename='dept_default'";
+                                        var paramUpdate = new DynamicParameters();
+                                        paramUpdate.Add("?lastupdatetime", DateTime.Now);
+                                        db.Execute(updateLastSyncSql, paramUpdate);
+                                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"部门数据同步成功\r\n"));
+                                    }
+                                }
+                                else
+                                {
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"部门无数据同步\r\n"));
+                                }
+                            }
+                            else
+                            {
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"dept_default not in syncinfo\r\n"));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInArea:{ex.Message}\r\n"));
+                        }
+                        finally
+                        {
+                            dept_sync = false;
+                        }
+                    }
+                }
+            });
         }
 
         private void btn_Store_Click(object sender, EventArgs e)
         {
+            Task.Run(() =>
+            {
+                if (dept_sync)
+                {
+                    MessageBox.Show("对不起! 门店数据同步中,请勿重复点击!", "Tips");
+                }
+                else
+                {
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"门店数据同步中,请耐心等待......\r\n"));
+                    var getLastSyncInfoSql = @"select tablename,lastupdatetime from syncinfo where tablename='store' limit 1";
+                    var getDataSql = @"select brand_name,brand_status,brand_subject,brand_posid,createtime,lastupdatetime from dept_default where lastupdatetime>=?lastupdatetime";
+                    var param = new DynamicParameters();
+                    using (var db = new MySqlConnection(ConfigInfo.Mysql_connectionstring))
+                    {
+                        try
+                        {
+                            var getLastSyncInfo = db.QueryFirstOrDefault<SyncInfo>(getLastSyncInfoSql);
+                            if (getLastSyncInfo != null)
+                            {
+                                param.Add("?lastupdatetime", getLastSyncInfo.LastUpdateTime);
+                                var getData = db.Query<Dept_default>(getDataSql, param).ToList();
+                                var dataList_add = new List<C_department>();
+                                var dataList_update = new List<C_department>();
+                                foreach (var item in getData)
+                                {
+                                    var data = new C_department() { Department = item.Dept_name, Alias = item.Dept_alias, Status = item.Dept_status, Seq = item.Dept_sequence, Sno = item.Dept_subject, BId = item.Dept_brand, CdmId = item.Dept_posid };
+                                    if (item.CreateTime == item.LastUpdateTime)
+                                    {
+                                        dataList_add.Add(data);
+                                    }
+                                    else
+                                    {
+                                        dataList_update.Add(data);
+                                    }
+                                }
+                                if (dataList_add.Count > 0 || dataList_update.Count > 0)
+                                {
+                                    bool updateFlag = true;
+                                    if (dataList_update.Count > 0)
+                                    {
+                                        var paramData_update = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_update = Common.Post(ConfigInfo.Apiurl_editdept, paramData_update);
+                                        if (result_update == null || result_update.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 门店数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                            updateFlag = false;
+                                        }
+                                    }
 
+                                    bool addFlag = true;
+                                    if (dataList_add.Count > 0 && updateFlag)
+                                    {
+                                        var paramData = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                                        var result_add = Common.Post(ConfigInfo.Apiurl_adddept, paramData);
+                                        if (result_add == null || result_add.Success)
+                                        {
+                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 门店数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                            addFlag = false;
+                                        }
+                                    }
+                                    if (updateFlag && addFlag)
+                                    {
+                                        var updateLastSyncSql = @"update syncinfo set lastupdatetime=?lastupdatetime where tablename='dept_default'";
+                                        var paramUpdate = new DynamicParameters();
+                                        paramUpdate.Add("?lastupdatetime", DateTime.Now);
+                                        db.Execute(updateLastSyncSql, paramUpdate);
+                                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"门店数据同步成功\r\n"));
+                                    }
+                                }
+                                else
+                                {
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"门店无数据同步\r\n"));
+                                }
+                            }
+                            else
+                            {
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"dept_default not in syncinfo\r\n"));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInArea:{ex.Message}\r\n"));
+                        }
+                        finally
+                        {
+                            dept_sync = false;
+                        }
+                    }
+                }
+            });
         }
 
         private void btn_Unit_Click(object sender, EventArgs e)
@@ -430,6 +775,50 @@ namespace DSTool
         private void btn_Payway_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void ExecteDataSync(List<object> dataList_update, List<object> dataList_add, string tips, string tableName)
+        {
+            bool updateFlag = true;
+            if (dataList_update.Count > 0)
+            {
+                var paramData_update = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                var result_update = Common.Post(ConfigInfo.Apiurl_editdept, paramData_update);
+                if (result_update == null || result_update.Success)
+                {
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! {tips}数据修改失败,原因:{result_update?.Msg}\r\n"));
+                    updateFlag = false;
+                }
+            }
+
+            bool addFlag = true;
+            if (dataList_add.Count > 0 && updateFlag)
+            {
+                var paramData = $"arr:{JsonConvert.SerializeObject(dataList_add)}";
+                var result_add = Common.Post(ConfigInfo.Apiurl_adddept, paramData);
+                if (result_add == null || result_add.Success)
+                {
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! {tips}数据新增失败,原因:{result_add?.Msg}\r\n"));
+                    addFlag = false;
+                }
+            }
+            if (updateFlag && addFlag)
+            {
+                var res = UpdateSyncInfo(tableName);
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{tips}数据同步成功\r\n"));
+            }
+        }
+
+        private int UpdateSyncInfo(string tableName)
+        {
+            using (var db = new MySqlConnection(ConfigInfo.Mysql_connectionstring))
+            {
+                var updateLastSyncSql = $"update syncinfo set lastupdatetime=?lastupdatetime where tablename=?tablename";
+                var paramUpdate = new DynamicParameters();
+                paramUpdate.Add("?lastupdatetime", DateTime.Now);
+                paramUpdate.Add("?tablename", tableName);
+                return db.Execute(updateLastSyncSql, paramUpdate);
+            }
         }
     }
 }
