@@ -33,6 +33,22 @@ namespace DSTool
             return null;
         }
 
+        public static string MD5Encrypt(string str,int bit)
+        {
+            var md5 = MD5.Create();
+            var byteArray = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
+            var sb = new StringBuilder();
+            foreach (var item in byteArray)
+            {
+                sb.Append(item.ToString("x2"));
+            }
+            if (bit==16)
+            {
+                return sb.ToString().Substring(8, 16);
+            }
+            return sb.ToString();
+        }
+
         /// <summary>
         /// POST请求,用于add和edit
         /// </summary>
@@ -56,12 +72,13 @@ namespace DSTool
                 var request = WebRequest.CreateHttp(ulr);
                 var front = GetTimeStamps();
                 var apipwd = "@acewill";
+                var preMD5Str = front + apipwd;
                 MD5 mD5 = MD5.Create();
-                var sign = Encoding.UTF8.GetString(mD5.ComputeHash(Encoding.UTF8.GetBytes(front + apipwd)));
-                var requestData = $"front:{front}&sign:{sign}";
+                var sign = MD5Encrypt(preMD5Str, 32);
+                var requestData = $"front={front}&sign={sign}";
                 if (!string.IsNullOrEmpty(paramData))
                 {
-                    requestData += $"&{paramData}";
+                    requestData += $"&{paramData.ToLower()}";
                 }
                 var body = Encoding.UTF8.GetBytes(requestData);
                 request.Method = "POST";
@@ -69,6 +86,7 @@ namespace DSTool
                 request.Accept = "application/json";//只接收json的返回
                 //request.Timeout = 5000;//超时时间5s
                 request.ContentLength = body.Length;
+                request.GetRequestStream().Write(body, 0, body.Length);
                 var response = request.GetResponse();
                 using (var sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
                 {

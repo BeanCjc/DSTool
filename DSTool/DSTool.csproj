@@ -69,9 +69,18 @@
     <Compile Include="ConfigInfo.cs" />
     <Compile Include="DbData\Area_default.cs" />
     <Compile Include="DbData\Brand_default.cs" />
+    <Compile Include="DbData\DA_BC.cs" />
+    <Compile Include="DbData\DA_BZDW.cs" />
     <Compile Include="DbData\DA_FD.cs" />
+    <Compile Include="DbData\DA_JLDW.cs" />
+    <Compile Include="DbData\DA_SP.cs" />
+    <Compile Include="DbData\DA_SPLB.cs" />
+    <Compile Include="DbData\DA_SYJ.cs" />
     <Compile Include="DbData\Dept_default.cs" />
     <Compile Include="DbData\SyncInfo.cs" />
+    <Compile Include="DbData\XS_BCGL.cs" />
+    <Compile Include="DbData\XS_PZ.cs" />
+    <Compile Include="DbData\XS_PZ_ZB.cs" />
     <Compile Include="DSTool.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -81,9 +90,18 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestEntity\C_department.cs" />
+    <Compile Include="RequestEntity\C_pay_type.cs" />
+    <Compile Include="RequestEntity\O_business_range.cs" />
+    <Compile Include="RequestEntity\O_dish.cs" />
+    <Compile Include="RequestEntity\O_dish_kind.cs" />
+    <Compile Include="RequestEntity\O_dish_unit.cs" />
+    <Compile Include="RequestEntity\O_menu_dish.cs" />
+    <Compile Include="RequestEntity\O_order_history.cs" />
+    <Compile Include="RequestEntity\O_order_item_history.cs" />
     <Compile Include="RequestEntity\ResponseResult.cs" />
     <Compile Include="RequestEntity\Sls_area.cs" />
     <Compile Include="RequestEntity\Sls_brand.cs" />
+    <Compile Include="RequestEntity\Sls_p_user.cs" />
     <Compile Include="RequestEntity\Sls_shop.cs" />
     <EmbeddedResource Include="DSTool.resx">
       <DependentUpon>DSTool.cs</DependentUpon>

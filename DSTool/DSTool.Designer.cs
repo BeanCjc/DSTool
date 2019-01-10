@@ -65,7 +65,7 @@
             // 
             // btn_Dept
             // 
-            this.btn_Dept.Location = new System.Drawing.Point(687, 94);
+            this.btn_Dept.Location = new System.Drawing.Point(687, 152);
             this.btn_Dept.Name = "btn_Dept";
             this.btn_Dept.Size = new System.Drawing.Size(75, 23);
             this.btn_Dept.TabIndex = 2;
@@ -75,7 +75,7 @@
             // 
             // btn_Unit
             // 
-            this.btn_Unit.Location = new System.Drawing.Point(687, 152);
+            this.btn_Unit.Location = new System.Drawing.Point(687, 210);
             this.btn_Unit.Name = "btn_Unit";
             this.btn_Unit.Size = new System.Drawing.Size(75, 23);
             this.btn_Unit.TabIndex = 3;
@@ -95,7 +95,7 @@
             // 
             // btn_Dish
             // 
-            this.btn_Dish.Location = new System.Drawing.Point(687, 210);
+            this.btn_Dish.Location = new System.Drawing.Point(687, 239);
             this.btn_Dish.Name = "btn_Dish";
             this.btn_Dish.Size = new System.Drawing.Size(75, 23);
             this.btn_Dish.TabIndex = 5;
@@ -105,7 +105,7 @@
             // 
             // btn_OrderMain
             // 
-            this.btn_OrderMain.Location = new System.Drawing.Point(687, 239);
+            this.btn_OrderMain.Location = new System.Drawing.Point(687, 268);
             this.btn_OrderMain.Name = "btn_OrderMain";
             this.btn_OrderMain.Size = new System.Drawing.Size(75, 23);
             this.btn_OrderMain.TabIndex = 6;
@@ -115,7 +115,7 @@
             // 
             // btn_OrderDetail
             // 
-            this.btn_OrderDetail.Location = new System.Drawing.Point(687, 268);
+            this.btn_OrderDetail.Location = new System.Drawing.Point(687, 297);
             this.btn_OrderDetail.Name = "btn_OrderDetail";
             this.btn_OrderDetail.Size = new System.Drawing.Size(75, 23);
             this.btn_OrderDetail.TabIndex = 7;
@@ -125,7 +125,7 @@
             // 
             // btn_Store
             // 
-            this.btn_Store.Location = new System.Drawing.Point(687, 123);
+            this.btn_Store.Location = new System.Drawing.Point(687, 94);
             this.btn_Store.Name = "btn_Store";
             this.btn_Store.Size = new System.Drawing.Size(75, 23);
             this.btn_Store.TabIndex = 8;
@@ -140,10 +140,11 @@
             this.rtxt_message.Size = new System.Drawing.Size(637, 416);
             this.rtxt_message.TabIndex = 9;
             this.rtxt_message.Text = "";
+            this.rtxt_message.TextChanged += new System.EventHandler(this.rtxt_message_TextChanged);
             // 
             // btn_MealTime
             // 
-            this.btn_MealTime.Location = new System.Drawing.Point(687, 297);
+            this.btn_MealTime.Location = new System.Drawing.Point(687, 123);
             this.btn_MealTime.Name = "btn_MealTime";
             this.btn_MealTime.Size = new System.Drawing.Size(75, 23);
             this.btn_MealTime.TabIndex = 10;

@@ -29,31 +29,41 @@ namespace DSTool
 
         private ConfigInfo Refresh(ConfigInfo configInfo)
         {
-            configInfo.Apiurl_addbrand = Common.GetAppConfig("apiurl_addbrand")?.ToString();
-            configInfo.Apiurl_addarea = Common.GetAppConfig("apiurl_addarea")?.ToString();
-            configInfo.Apiurl_addmealtime = Common.GetAppConfig("apiurl_addmealtime")?.ToString();
-            configInfo.Apiurl_adddept = Common.GetAppConfig("apiurl_adddept")?.ToString();
-            configInfo.Apiurl_addstore = Common.GetAppConfig("apiurl_addstore")?.ToString();
-            configInfo.Apiurl_addunit = Common.GetAppConfig("apiurl_addunit")?.ToString();
-            configInfo.Apiurl_adddishtype = Common.GetAppConfig("apiurl_adddishtype")?.ToString();
-            configInfo.Apiurl_adddish = Common.GetAppConfig("apiurl_adddish")?.ToString();
-            configInfo.Apiurl_addpayway = Common.GetAppConfig("apiurl_addpayway")?.ToString();
-            configInfo.Apiurl_adduser = Common.GetAppConfig("apiurl_adduser")?.ToString();
-            configInfo.Apiurl_addordermain = Common.GetAppConfig("apiurl_addordermain")?.ToString();
-            configInfo.Apiurl_addorderdetail = Common.GetAppConfig("apiurl_addorderdetail")?.ToString();
+            configInfo.Apiurl_addbrand = Common.GetAppConfig("apiurl")?.ToString() + "?do=brand&apikey=sign&type=add";
+            configInfo.Apiurl_addarea = Common.GetAppConfig("apiurl")?.ToString() + "?do=area&apikey=sign&type=add";
+            configInfo.Apiurl_addmealtime = Common.GetAppConfig("apiurl")?.ToString() + "?do=businessRange&apikey=sign&type=add";
+            configInfo.Apiurl_adddept = Common.GetAppConfig("apiurl")?.ToString() + "?do=department&apikey=sign&type=add";
+            configInfo.Apiurl_addstore = Common.GetAppConfig("apiurl")?.ToString() + "?do=shop&apikey=sign&type=add";
+            configInfo.Apiurl_addunit = Common.GetAppConfig("apiurl")?.ToString() + "?do=dishunit&apikey=sign&type=add";
+            configInfo.Apiurl_adddishtype = Common.GetAppConfig("apiurl")?.ToString() + "?do=dishkind&apikey=sign&type=add";
+            configInfo.Apiurl_adddish = Common.GetAppConfig("apiurl")?.ToString() + "?do=dish&apikey=sign&type=add";
+            configInfo.Apiurl_addpayway = Common.GetAppConfig("apiurl")?.ToString() + "?do=paytype&apikey=sign&type=add";
+            configInfo.Apiurl_adduser = Common.GetAppConfig("apiurl")?.ToString() + "?do=user&apikey=sign&type=add";
+            configInfo.Apiurl_addordermain = Common.GetAppConfig("apiurl")?.ToString() + "?do=orderInfo&apikey=sign&type=add";
+
+            configInfo.Apiurl_editbrand = Common.GetAppConfig("apiurl")?.ToString() + "?do=brand&apikey=sign&type=edit";
+            configInfo.Apiurl_editarea = Common.GetAppConfig("apiurl")?.ToString() + "?do=area&apikey=sign&type=edit";
+            configInfo.Apiurl_editmealtime = Common.GetAppConfig("apiurl")?.ToString() + "?do=businessRange&apikey=sign&type=edit";
+            configInfo.Apiurl_editdept = Common.GetAppConfig("apiurl")?.ToString() + "?do=department&apikey=sign&type=edit";
+            configInfo.Apiurl_editstore = Common.GetAppConfig("apiurl")?.ToString() + "?do=shop&apikey=sign&type=edit";
+            configInfo.Apiurl_editunit = Common.GetAppConfig("apiurl")?.ToString() + "?do=dishunit&apikey=sign&type=edit";
+            configInfo.Apiurl_editdishtype = Common.GetAppConfig("apiurl")?.ToString() + "?do=dishkind&apikey=sign&type=edit";
+            configInfo.Apiurl_editdish = Common.GetAppConfig("apiurl")?.ToString() + "?do=dish&apikey=sign&type=edit";
+            configInfo.Apiurl_editpayway = Common.GetAppConfig("apiurl")?.ToString() + "?do=paytype&apikey=sign&type=edit";
+            configInfo.Apiurl_edituser = Common.GetAppConfig("apiurl")?.ToString() + "?do=user&apikey=sign&type=edit";
 
             configInfo.Brand_table = Common.GetAppConfig("brand_table")?.ToString();
             configInfo.Brand_name = Common.GetAppConfig("brand_name")?.ToString();
             configInfo.Brand_status = Common.GetAppConfig("brand_status")?.ToString();
             configInfo.Brand_subject = Common.GetAppConfig("brand_subject")?.ToString();
-            configInfo.Brand_posid = Common.GetAppConfig("brand_posid")?.ToString();
+            configInfo.Brand_posid = Convert.ToInt32(Common.GetAppConfig("brand_posid"));
 
             configInfo.Area_table = Common.GetAppConfig("area_table")?.ToString();
             configInfo.Area_name = Common.GetAppConfig("area_name")?.ToString();
             configInfo.Area_level = Common.GetAppConfig("area_level")?.ToString();
             configInfo.Area_status = Common.GetAppConfig("area_status")?.ToString();
             configInfo.Area_subject = Common.GetAppConfig("area_subject")?.ToString();
-            configInfo.Area_posid = Common.GetAppConfig("area_posid")?.ToString();
+            configInfo.Area_posid = Convert.ToInt32(Common.GetAppConfig("area_posid"));
 
             configInfo.Dept_table = Common.GetAppConfig("dept_table")?.ToString();
             configInfo.Dept_name = Common.GetAppConfig("dept_name")?.ToString();
@@ -62,7 +72,7 @@ namespace DSTool
             configInfo.Dept_sequence = Common.GetAppConfig("dept_sequence")?.ToString();
             configInfo.Dept_subject = Common.GetAppConfig("dept_subject")?.ToString();
             configInfo.Dept_brand = Common.GetAppConfig("dept_brand")?.ToString();
-            configInfo.Dept_posid = Common.GetAppConfig("dept_posid")?.ToString();
+            configInfo.Dept_posid = Convert.ToInt32(Common.GetAppConfig("dept_posid"));
 
             configInfo.Mysql_connectionstring = ConfigurationManager.ConnectionStrings["mysql_connectionstring"]?.ToString();
             configInfo.Sqlserver_connectionstring = ConfigurationManager.ConnectionStrings["sqlserver_connectionstring"]?.ToString();
@@ -98,14 +108,14 @@ namespace DSTool
         public string Brand_name { get; set; }
         public string Brand_status { get; set; }
         public string Brand_subject { get; set; }
-        public string Brand_posid { get; set; }
+        public int Brand_posid { get; set; }
 
         public string Area_table { get; set; }
         public string Area_name { get; set; }
         public string Area_level { get; set; }
         public string Area_status { get; set; }
         public string Area_subject { get; set; }
-        public string Area_posid { get; set; }
+        public int Area_posid { get; set; }
 
         public string Dept_table { get; set; }
         public string Dept_name { get; set; }
@@ -114,7 +124,7 @@ namespace DSTool
         public string Dept_sequence { get; set; }
         public string Dept_subject { get; set; }
         public string Dept_brand { get; set; }
-        public string Dept_posid { get; set; }
+        public int Dept_posid { get; set; }
 
         public string Mysql_connectionstring { get; set; }
         public string Sqlserver_connectionstring { get; set; }

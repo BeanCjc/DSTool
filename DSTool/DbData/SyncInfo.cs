@@ -11,5 +11,7 @@ namespace DSTool.DbData
         public string TableName { get; set; }
         public DateTime LastUpdateTime { get; set; }
 
+        public bool IsSynced { get; set; }
+
     }
 }
