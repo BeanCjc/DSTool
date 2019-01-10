@@ -167,7 +167,9 @@ namespace DSTool
                     rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌数据同步中,请耐心等待......\r\n"));
                     var getLastSyncInfoSql = @"select tablename,lastupdatetime from syncinfo where tablename='brand_default' limit 1";
                     var getDataSql = @"select brand_name,brand_status,brand_subject,brand_posid,createtime,lastupdatetime from brand_default where lastupdatetime>=?lastupdatetime";
-                    var param = new DynamicParameters();
+                    var getBeforeFailedData = @"select iddata from syncfaileddata where tablename=?tablename";
+                    var paramfailed = new DynamicParameters();
+                    paramfailed.Add("?tablename", "brand_default");
                     using (var db = new MySqlConnection(ConfigInfo.Mysql_connectionstring))
                     {
                         try
@@ -175,75 +177,66 @@ namespace DSTool
                             var getLastSyncInfo = db.QueryFirstOrDefault<SyncInfo>(getLastSyncInfoSql);
                             if (getLastSyncInfo != null)
                             {
+                                var param = new DynamicParameters();
                                 param.Add("?lastupdatetime", getLastSyncInfo.LastUpdateTime.ToString("yyyy-MM-dd HH:mm:ss"));
                                 var getData = db.Query<Brand_default>(getDataSql, param).ToList();
-                                //获取待同步的数据,包含新增和修改,不含删除
-                                var dataList_add = new List<Sls_brand>();
-                                var dataList_update = new List<Sls_brand>();
-                                foreach (var item in getData)
+                                var getFailedData = db.Query<SyncFailData>(getBeforeFailedData, paramfailed).ToList();
+                                //获取待同步的数据,包含新增和修改,不含删除,以及之前同步失败的数据
+                                if (getData.Count > 0 || getFailedData.Count > 0)
                                 {
-                                    var data = new Sls_brand()
+                                    if (getFailedData.Count > 0)
                                     {
-                                        BrandName = item.Brand_name,
-                                        Status = item.Brand_status,
-                                        Subject = item.Brand_subject,
-                                        CbId = item.Brand_posid
-                                    };
-                                    if (item.CreateTime == item.LastUpdateTime)
-                                    {
-                                        dataList_add.Add(data);
-                                    }
-                                    else
-                                    {
-                                        dataList_update.Add(data);
-                                    }
-                                }
-                                if (dataList_add.Count > 0 || dataList_update.Count > 0)
-                                {
-                                    //先发起修改的请求，再发起新增的请求，目的分为三种情况.
-                                    //情况1:修改失败,不执行新增的请求;
-                                    //情况二:修改成功，新增的请求失败,不写更新记录表,下次将再次修改数据并添加数据;
-                                    //情况三:修改和新增都成功,那就更新更新记录表
-
-                                    //请求接口同步数据 edit
-                                    bool updateFlag = true;
-                                    if (dataList_update.Count > 0)
-                                    {
-                                        var paramData_update = $"arr={JsonConvert.SerializeObject(dataList_add)}";
-                                        var result_update = Common.Post(ConfigInfo.Apiurl_editbrand, paramData_update);
-                                        if (result_update == null || !result_update.Success)
+                                        foreach (var item in getFailedData)
                                         {
-                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据修改失败,原因:{result_update?.Msg}\r\n"));
-                                            //rtxt_message.Text += $"品牌数据修改失败，原因:{result_update?.Msg}\r\n";
-                                            updateFlag = false;
+                                            var idList = item.IdList.Split(';');
+                                            if (idList.Length == 1)
+                                            {
+                                                var data = Brand_default.GetById(Convert.ToInt32(idList[0]));
+
+                                            }
+                                            else
+                                            {
+                                                //获取数据失败
+
+                                            }
+                                        }
+                                    }
+                                    foreach (var item in getData)
+                                    {
+                                        var data = new Sls_brand()
+                                        {
+                                            BrandName = item.Brand_name,
+                                            Status = item.Brand_status,
+                                            Subject = item.Brand_subject,
+                                            CbId = item.Brand_posid
+                                        };
+                                        if (item.CreateTime == item.LastUpdateTime)
+                                        {
+                                            var paramData = $"arr={JsonConvert.SerializeObject(data)}";
+                                            var result_add = Common.Post(ConfigInfo.Apiurl_addbrand, paramData);
+                                            if (result_add == null || !result_add.Success)
+                                            {
+                                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                                SyncFailData.InsertFailDate(new SyncFailData() { TableName = "brand_default", IdList = data.CbId.ToString(), FailType = 0, FailMessage = result_add?.Msg });
+                                            }
+                                        }
+                                        else
+                                        {
+                                            var paramData_update = $"arr={JsonConvert.SerializeObject(data)}";
+                                            var result_update = Common.Post(ConfigInfo.Apiurl_editbrand, paramData_update);
+                                            if (result_update == null || !result_update.Success)
+                                            {
+                                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                                SyncFailData.InsertFailDate(new SyncFailData() { TableName = "brand_default", IdList = data.CbId.ToString(), FailType = 0, FailMessage = result_update?.Msg });
+                                            }
                                         }
                                     }
 
-                                    bool addFlag = true;
-                                    if (dataList_add.Count > 0 && updateFlag)
-                                    {
-                                        //请求接口同步数据 add
-                                        //var url = ConfigInfo.Apiurl_addbrand + "?do=brand&type=add&apikey=sign";
-                                        var paramData = $"arr={JsonConvert.SerializeObject(dataList_add[0])}";
-                                        var result_add = Common.Post(ConfigInfo.Apiurl_addbrand, paramData);
-                                        if (result_add == null || !result_add.Success)
-                                        {
-                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据新增失败,原因:{result_add?.Msg}\r\n"));
-                                            //rtxt_message.Text += $"品牌数据新增失败，原因:{result_add?.Msg}\r\n";
-                                            addFlag = false;
-                                        }
-                                    }
-
-                                    //数据同步成功,写更新记录表,若此次没有数据同步也将更新该表,下次就不用从原来的时间再次同步(一般不会有这种情况)
-                                    if (updateFlag && addFlag)
-                                    {
-                                        var updateLastSyncSql = @"update syncinfo set lastupdatetime=?lastupdatetime where tablename='brand_default'";
-                                        var paramUpdate = new DynamicParameters();
-                                        paramUpdate.Add("?lastupdatetime", DateTime.Now);
-                                        db.Execute(updateLastSyncSql, paramUpdate);
-                                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌数据同步成功\r\n"));
-                                        //rtxt_message.Text += $"品牌数据同步成功\r\n";
-                                    }
+                                    var updateLastSyncSql = @"update syncinfo set lastupdatetime=?lastupdatetime where tablename='brand_default'";
+                                    var paramUpdate = new DynamicParameters();
+                                    paramUpdate.Add("?lastupdatetime", DateTime.Now);
+                                    db.Execute(updateLastSyncSql, paramUpdate);
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌数据同步成功\r\n"));
                                 }
                                 else
                                 {
@@ -253,13 +246,11 @@ namespace DSTool
                             else
                             {
                                 rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"brand_default not in syncinfo\r\n"));
-                                //rtxt_message.Text += "brand_default not in syncinfo\r\n";
                             }
                         }
                         catch (Exception ex)
                         {
                             rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInBrand:{ex.Message}\r\n"));
-                            //rtxt_message.Text += $"ExceptionInfoInBrand:{ex.Message}\r\n";
                         }
                         finally
                         {

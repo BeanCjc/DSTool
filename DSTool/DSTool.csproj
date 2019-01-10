@@ -77,6 +77,7 @@
     <Compile Include="DbData\DA_SPLB.cs" />
     <Compile Include="DbData\DA_SYJ.cs" />
     <Compile Include="DbData\Dept_default.cs" />
+    <Compile Include="DbData\SyncFailData.cs" />
     <Compile Include="DbData\SyncInfo.cs" />
     <Compile Include="DbData\XS_BCGL.cs" />
     <Compile Include="DbData\XS_PZ.cs" />

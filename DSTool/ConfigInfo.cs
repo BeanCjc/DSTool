@@ -74,8 +74,8 @@ namespace DSTool
             configInfo.Dept_brand = Common.GetAppConfig("dept_brand")?.ToString();
             configInfo.Dept_posid = Convert.ToInt32(Common.GetAppConfig("dept_posid"));
 
-            configInfo.Mysql_connectionstring = ConfigurationManager.ConnectionStrings["mysql_connectionstring"]?.ToString();
-            configInfo.Sqlserver_connectionstring = ConfigurationManager.ConnectionStrings["sqlserver_connectionstring"]?.ToString();
+            ConfigInfo.Mysql_connectionstring = ConfigurationManager.ConnectionStrings["mysql_connectionstring"]?.ToString();
+            ConfigInfo.Sqlserver_connectionstring = ConfigurationManager.ConnectionStrings["sqlserver_connectionstring"]?.ToString();
             return configInfo;
         }
         public string Apiurl_addbrand { get; set; }
@@ -126,7 +126,7 @@ namespace DSTool
         public string Dept_brand { get; set; }
         public int Dept_posid { get; set; }
 
-        public string Mysql_connectionstring { get; set; }
-        public string Sqlserver_connectionstring { get; set; }
+        public static string Mysql_connectionstring { get; set; }
+        public static string Sqlserver_connectionstring { get; set; }
     }
 }
