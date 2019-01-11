@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Dapper;
+using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -150,5 +153,27 @@ namespace DSTool.DbData
         /// 自助点餐 default 1 NO
         /// </summary>
         public int ZZDC { get; set; }
+
+        public static DA_SPLB GetById(int id)
+        {
+            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where SPLBNM=@SPLBNM";
+            var param = new DynamicParameters();
+            param.Add("SPLBNM", id);
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Query<DA_SPLB>(sql, param).FirstOrDefault();
+            }
+        }
+
+        public static List<DA_SPLB> GetListByLastTime(string lastTime)
+        {
+            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where XGRQ>=@lasttime or JSRQ>=@lasttime";
+            var param = new DynamicParameters();
+            param.Add("lasttiem", lastTime);
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Query<DA_SPLB>(sql, param).ToList();
+            }
+        }
     }
 }

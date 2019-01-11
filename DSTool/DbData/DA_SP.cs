@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
+using MySql.Data.MySqlClient;
 
 namespace DSTool.DbData
 {
@@ -290,5 +293,29 @@ namespace DSTool.DbData
         /// 结束时间 NO
         /// </summary>
         public int JSSJ { get; set; }
+
+        public static DA_SP GetById(int id)
+        {
+
+            var sql = @"select SPNM,SPXLNM,SP_E,JDRQ,SP,SPZJM,QYBJ,XH from DA_SP where SPNM=@SPNM";
+            var param = new DynamicParameters();
+            param.Add("SPNM", id);
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Query<DA_SP>(sql, param).FirstOrDefault();
+            }
+        }
+        public static List<DA_SP> GetListByLastTime(DateTime lastTime)
+        {
+
+            var sql = @"select SPNM,SPXLNM,SP_E,JDRQ,SP,SPZJM,QYBJ,XH from DA_SP where JDRQ>=@JDRQ or XGRQ>=@XGRQ";
+            var param = new DynamicParameters();
+            param.Add("JDRQ", lastTime.ToString("yyyyMMdd"));
+            param.Add("XGRQ", lastTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Query<DA_SP>(sql, param).ToList();
+            }
+        }
     }
 }

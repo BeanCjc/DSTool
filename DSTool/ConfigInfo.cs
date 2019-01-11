@@ -61,6 +61,8 @@ namespace DSTool
             configInfo.Area_table = Common.GetAppConfig("area_table")?.ToString();
             configInfo.Area_name = Common.GetAppConfig("area_name")?.ToString();
             configInfo.Area_level = Common.GetAppConfig("area_level")?.ToString();
+            configInfo.Area_faid = Convert.ToInt32(Common.GetAppConfig("area_faid"));
+            configInfo.Area_seq = Convert.ToInt32(Common.GetAppConfig("area_seq"));
             configInfo.Area_status = Common.GetAppConfig("area_status")?.ToString();
             configInfo.Area_subject = Common.GetAppConfig("area_subject")?.ToString();
             configInfo.Area_posid = Convert.ToInt32(Common.GetAppConfig("area_posid"));
@@ -71,11 +73,12 @@ namespace DSTool
             configInfo.Dept_status = Common.GetAppConfig("dept_status")?.ToString();
             configInfo.Dept_sequence = Common.GetAppConfig("dept_sequence")?.ToString();
             configInfo.Dept_subject = Common.GetAppConfig("dept_subject")?.ToString();
-            configInfo.Dept_brand = Common.GetAppConfig("dept_brand")?.ToString();
+            configInfo.Dept_brand = Convert.ToInt32(Common.GetAppConfig("dept_brand"));
             configInfo.Dept_posid = Convert.ToInt32(Common.GetAppConfig("dept_posid"));
 
             configInfo.Mysql_connectionstring = ConfigurationManager.ConnectionStrings["mysql_connectionstring"]?.ToString();
             configInfo.Sqlserver_connectionstring = ConfigurationManager.ConnectionStrings["sqlserver_connectionstring"]?.ToString();
+            ConfigInfo.ConnectionString = !string.IsNullOrEmpty(configInfo.Sqlserver_connectionstring) ? configInfo.Sqlserver_connectionstring : configInfo.Mysql_connectionstring;
             return configInfo;
         }
         public string Apiurl_addbrand { get; set; }
@@ -113,6 +116,8 @@ namespace DSTool
         public string Area_table { get; set; }
         public string Area_name { get; set; }
         public string Area_level { get; set; }
+        public int? Area_faid { get; set; }
+        public int Area_seq { get; set; }
         public string Area_status { get; set; }
         public string Area_subject { get; set; }
         public int Area_posid { get; set; }
@@ -123,10 +128,10 @@ namespace DSTool
         public string Dept_status { get; set; }
         public string Dept_sequence { get; set; }
         public string Dept_subject { get; set; }
-        public string Dept_brand { get; set; }
+        public int Dept_brand { get; set; }
         public int Dept_posid { get; set; }
-
         public string Mysql_connectionstring { get; set; }
         public string Sqlserver_connectionstring { get; set; }
+        public static string ConnectionString { get; set; }
     }
 }

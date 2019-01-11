@@ -9,7 +9,7 @@ namespace DSTool.RequestEntity
     class Sls_area
     {
         public string AreaName { get; set; }
-        public int FaId { get; set; }
+        public int? FaId { get; set; }
         public int Seq { get; set; }
         public int AreaLevel { get; set; }
         public int Status { get; set; }
