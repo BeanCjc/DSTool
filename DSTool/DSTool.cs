@@ -1074,7 +1074,7 @@ namespace DSTool
             {
                 areaFlag = true;
             }
-            if (!string.IsNullOrEmpty(dept_name) && !string.IsNullOrEmpty(dept_alias) && !string.IsNullOrEmpty(dept_status) && !string.IsNullOrEmpty(dept_sequence) && !string.IsNullOrEmpty(dept_subject) && !string.IsNullOrEmpty(dept_brand) && !string.IsNullOrEmpty(dept_posid.ToString()))
+            if (!string.IsNullOrEmpty(dept_name) && !string.IsNullOrEmpty(dept_alias) && !string.IsNullOrEmpty(dept_status) && !string.IsNullOrEmpty(dept_sequence) && !string.IsNullOrEmpty(dept_subject) && !string.IsNullOrEmpty(dept_brand.ToString()) && !string.IsNullOrEmpty(dept_posid.ToString()))
             {
                 deptFlag = true;
             }
