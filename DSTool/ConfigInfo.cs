@@ -57,6 +57,7 @@ namespace DSTool
             configInfo.Brand_status = Common.GetAppConfig("brand_status")?.ToString();
             configInfo.Brand_subject = Common.GetAppConfig("brand_subject")?.ToString();
             configInfo.Brand_posid = Convert.ToInt32(Common.GetAppConfig("brand_posid"));
+            configInfo.Brand_seq = Convert.ToInt32(Common.GetAppConfig("brand_seq"));
 
             configInfo.Area_table = Common.GetAppConfig("area_table")?.ToString();
             configInfo.Area_name = Common.GetAppConfig("area_name")?.ToString();
@@ -112,6 +113,7 @@ namespace DSTool
         public string Brand_status { get; set; }
         public string Brand_subject { get; set; }
         public int Brand_posid { get; set; }
+        public int Brand_seq { get; set; }
 
         public string Area_table { get; set; }
         public string Area_name { get; set; }

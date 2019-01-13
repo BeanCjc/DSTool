@@ -34,6 +34,21 @@ namespace DSTool.DbData
                 return db.Query<DA_JLDW>(sql, param).FirstOrDefault();
             }
         }
+
+        public static string GetIdByUnitName(string UnitName)
+        {
+            if (string.IsNullOrEmpty(UnitName))
+            {
+                return GetIdByUnitName("份");
+            }
+            var sql = @"select JLDWNM from DA_JLDW where JLDW=@JLDW";
+            var param = new DynamicParameters();
+            param.Add("JLDW", UnitName);
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.ExecuteScalar(sql, param)?.ToString() ?? GetIdByUnitName("份");
+            }
+        }
         public static List<DA_JLDW> GetList()
         {
             var sql = @"select JLDWNM,JLDW from DA_JLDW";

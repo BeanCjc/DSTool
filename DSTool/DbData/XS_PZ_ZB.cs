@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 
 namespace DSTool.DbData
 {
@@ -235,5 +237,30 @@ namespace DSTool.DbData
         /// 其他付款5 default 0 NO
         /// </summary>
         public decimal QTFK5 { get; set; }
+
+        /// <summary>
+        /// 订单项
+        /// </summary>
+        public List<XS_PZ> Order_Items { get; set; }
+
+        public static List<XS_PZ_ZB> GetListByLastTime(DateTime lastTime)
+        {
+            var sql = @" SELECT JYH,CZRQ,CZSJ,FDNM,CZRQ_XS,CZSJ_XS,XSRQ,RS,ZTNM,XSJE,XSYH,
+                                MLJE,/*XJJE,CZKJE, YHQJE,QTJE,MDJE,QDJE,JE1,*/BCJE,RJRQ,BXJE,FJZBJTRUE,BZ,ZT 
+                           FROM XS_PZ_ZB
+                          WHERE CZRQ>=@CZRQ
+                            AND CZSJ>=@CZSJ
+                            AND CZRQ_XS>=@CZRQ_XS
+                            AND CZSJ_XS>=@CZSJ_XS";
+            var param = new DynamicParameters();
+            param.Add("CZRQ", lastTime.ToString("yyyyMMdd"));
+            param.Add("CZSJ", lastTime.ToString("HHmmss"));
+            param.Add("CZRQ_XS", lastTime.ToString("yyyyMMdd"));
+            param.Add("CZSJ_XS", lastTime.ToString("HHmmss"));
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Query<XS_PZ_ZB>(sql, param).ToList();
+            }
+        }
     }
 }

@@ -85,9 +85,9 @@ namespace DSTool
 	                                            [brand_status] [nchar](10) NOT NULL,
 	                                            [brand_subject] [nchar](10) NOT NULL,
 	                                            [brand_posid] [int] NOT NULL,
-	                                            [seq] [int] NULL,
-	                                            [utime] [datetime] NULL,
-	                                            [memo] [varchar](50) NULL,
+	                                            [brand_seq] [int] NULL,
+	                                            [brand_utime] [datetime] NULL,
+	                                            [brand_memo] [varchar](50) NULL,
 	                                            [createtime] [datetime] NULL,
 	                                            [lastupdatetime] [datetime] NULL,
                                              CONSTRAINT [PK_brand_default] PRIMARY KEY CLUSTERED 
@@ -121,7 +121,7 @@ namespace DSTool
             var selectDeptSql = @"select table_name from information_schema.tables where TABLE_NAME=@tablename";
             var createDeptSql = @" CREATE TABLE [dbo].[dept_default](
 	                                            [dept_alias] [varchar](50) NOT NULL,
-	                                            [dept_name] [int] NOT NULL,
+	                                            [dept_name] [varchar](50) NOT NULL,
 	                                            [dept_brand] [int] NOT NULL,
 	                                            [dept_sequence] [int] NOT NULL,
 	                                            [dept_status] [int] NOT NULL,
@@ -325,7 +325,7 @@ namespace DSTool
                     }
                     var getData = Area_default.GetListByLastTime(getLastSyncInfo.LastUpdateTime.ToString("yyyy-MM-dd HH:mm:ss"));
                     var getFailedData = SyncFailData.GetListByTableName("area_default");
-                    if (getFailedData.Count > 0 || getData.Count > 0)
+                    if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
                         rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"区域无数据同步\r\n"));
                         area_sync = false;
@@ -459,7 +459,7 @@ namespace DSTool
                         store_sync = false;
                         return;
                     }
-                    var getData = DA_FD.GetListByLastTime(getLastSyncInfo.LastUpdateTime.ToString("yyyyMMdd"));
+                    var getData = DA_FD.GetListByLastTime(getLastSyncInfo.LastUpdateTime.ToString("yyyy-MM-dd HH:mm:ss.fff"));
                     var getFailedData = SyncFailData.GetListByTableName("store");
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
@@ -470,7 +470,7 @@ namespace DSTool
                     //同步以往失败的数据
                     if (getFailedData.Count > 0)
                     {
-
+                        //不写，不需要
                     }
                     bool flag = true;
                     //同步数据
@@ -493,7 +493,6 @@ namespace DSTool
                         if (result_add == null || !result_add.Success)
                         {
                             rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 门店数据(storeid:{item.FDNM})新增失败,原因:{result_add?.Msg}\r\n"));
-                            SyncFailData.InsertFailDate(new SyncFailData() { TableName = "store", IdList = data.CsId.ToString(), FailType = 0, FailMessage = result_add?.Msg });
                             flag = false && true;
                         }
                     }
@@ -522,64 +521,59 @@ namespace DSTool
                 if (meal_time_sync)
                 {
                     MessageBox.Show("对不起! 餐段数据同步中,请勿重复点击!", "Tips");
+                    return;
                 }
-                else
+                meal_time_sync = true;
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步中,请耐心等待......\r\n"));
+                using (var db = new SqlConnection(ConfigInfo.ConnectionString))
                 {
-                    meal_time_sync = true;
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步中,请耐心等待......\r\n"));
-                    using (var db = new SqlConnection(ConfigInfo.Mysql_connectionstring))
+                    try
                     {
-                        try
+                        var getLastSyncInfo = SyncInfo.GetInfoByTableName("meal_time");
+                        if (getLastSyncInfo == null)
                         {
-                            var getLastSyncInfo = SyncInfo.GetInfoByTableName("meal_time");
-                            if (getLastSyncInfo != null)
-                            {
-                                if (!getLastSyncInfo.IsSynced)
-                                {
-                                    var start = new DateTime(2019, 1, 1, 0, 0, 0);
-                                    var end = new DateTime(2019, 1, 1, 23, 59, 59);
-                                    var now = DateTime.Now;
-                                    var data = new O_business_range()
-                                    {
-                                        Businessrange = "全天",
-                                        StartTime = start,
-                                        ShowStartTime = start,
-                                        ShowEndTime = end,
-                                        Status = 1,
-                                        BId = ConfigInfo.Brand_posid.ToString(),
-                                        CbrId = 1
-                                    };
-                                    var paramData = $"arr={JsonConvert.SerializeObject(data)}";
-                                    var result_add = Common.Post(ConfigInfo.Apiurl_addmealtime, paramData);
-                                    if (result_add == null || !result_add.Success)
-                                    {
-                                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 餐段数据新增失败,原因:{result_add?.Msg}\r\n"));
-                                    }
-                                    else
-                                    {
-                                        SyncInfo.UpdateByTableName("meal_time", 1);
-                                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步成功\r\n"));
-                                    }
-                                    //rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段无数据同步\r\n"));
-                                }
-                                else
-                                {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 餐段已经同步过了且只同步一次\r\n"));
-                                }
-                            }
-                            else
-                            {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"meal_time not in syncinfo\r\n"));
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInMeal_Time:{ex.Message}\r\n"));
-                        }
-                        finally
-                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"meal_time not in syncinfo\r\n"));
                             meal_time_sync = false;
+                            return;
                         }
+                        if (getLastSyncInfo.IsSynced)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 餐段已经同步过了且只同步一次\r\n"));
+                            meal_time_sync = false;
+                            return;
+                        }
+                        var start = new DateTime(2019, 1, 1, 0, 0, 0);
+                        var end = new DateTime(2019, 1, 1, 23, 59, 59);
+                        var now = DateTime.Now;
+                        var data = new O_business_range()
+                        {
+                            Businessrange = "全天",
+                            StartTime = start,
+                            ShowStartTime = start,
+                            ShowEndTime = end,
+                            Status = 1,
+                            BId = ConfigInfo.Brand_posid.ToString(),
+                            CbrId = 1
+                        };
+                        var paramData = $"arr={JsonConvert.SerializeObject(data)}";
+                        var result_add = Common.Post(ConfigInfo.Apiurl_addmealtime, paramData);
+                        if (result_add == null || !result_add.Success)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 餐段数据新增失败,原因:{result_add?.Msg}\r\n"));
+                        }
+                        else
+                        {
+                            SyncInfo.UpdateByTableName("meal_time", 1);
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步成功\r\n"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInMeal_Time:{ex.Message}\r\n"));
+                    }
+                    finally
+                    {
+                        meal_time_sync = false;
                     }
                 }
             });
@@ -729,71 +723,72 @@ namespace DSTool
                 if (dish_type_sync)
                 {
                     MessageBox.Show("对不起! 品项类型数据同步中,请勿重复点击!", "Tips");
+                    return;
                 }
-                else
+                dish_type_sync = true;
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步中,请耐心等待......\r\n"));
+                using (var db = new SqlConnection(ConfigInfo.ConnectionString))
                 {
-                    dish_type_sync = true;
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步中,请耐心等待......\r\n"));
-                    using (var db = new SqlConnection(ConfigInfo.Mysql_connectionstring))
+                    try
                     {
-                        try
+                        var getLastSyncInfo = SyncInfo.GetInfoByTableName("dish_type");
+                        if (getLastSyncInfo == null)
                         {
-                            var getLastSyncInfo = SyncInfo.GetInfoByTableName("dish_type");
-                            if (getLastSyncInfo != null)
-                            {
-                                var getData = DA_SPLB.GetListByLastTime(getLastSyncInfo.LastUpdateTime.ToString("yyyy-MM-dd HH:mm:ss"));
-                                var getFailedData = SyncFailData.GetListByTableName("dish_type");
-                                var now = DateTime.Now;
-                                if (getFailedData.Count > 0 || getData.Count > 0)
-                                {
-                                    foreach (var item in getData)
-                                    {
-                                        var data = new O_dish_kind()
-                                        {
-                                            DkId = item.SPLBNM,
-                                            PdkId = item.SSLBNM,
-                                            DishKind = item.SPLB,
-                                            Valid = item.QYBJ,
-                                            SNo = item.SPLBDM,
-                                            BId = ConfigInfo.Brand_posid,
-                                            UTime = now.ToString("yyyy-MM-dd HH:mm:ss"),
-                                            DmId = ConfigInfo.Dept_posid
-                                        };
-                                        var paramData_update = $"arr={JsonConvert.SerializeObject(data)}";
-                                        var result_update = Common.Post(ConfigInfo.Apiurl_editdishtype, paramData_update);
-                                        if (result_update == null || !result_update.Success)
-                                        {
-                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项类型数据修改失败,原因:{result_update?.Msg}\r\n"));
-                                        }
-
-                                        var paramData = $"arr={JsonConvert.SerializeObject(data)}";
-                                        var result_add = Common.Post(ConfigInfo.Apiurl_adddishtype, paramData);
-                                        if (result_add == null || !result_add.Success)
-                                        {
-                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项类型数据新增失败,原因:{result_add?.Msg}\r\n"));
-                                        }
-                                    }
-                                    SyncInfo.UpdateByTableName("dish_type");
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步成功\r\n"));
-                                }
-                                else
-                                {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型无数据同步\r\n"));
-                                }
-                            }
-                            else
-                            {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"dish_type not in syncinfo\r\n"));
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInDish_Type:{ex.Message}\r\n"));
-                        }
-                        finally
-                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"dish_type not in syncinfo\r\n"));
                             dish_type_sync = false;
+                            return;
                         }
+                        var getData = DA_SPLB.GetListByLastTime(getLastSyncInfo.LastUpdateTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                        var getFailedData = SyncFailData.GetListByTableName("dish_type");
+                        var now = DateTime.Now;
+                        if (getFailedData.Count <= 0 && getData.Count <= 0)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型无数据同步\r\n"));
+                            dish_type_sync = false;
+                            return;
+                        }
+                        int addCount = 0, updateCoutnt = 0, failCount = 0;
+                        foreach (var item in getData)
+                        {
+                            var data = new O_dish_kind()
+                            {
+                                DkId = item.SPLBNM,
+                                PdkId = item.SSLBNM,
+                                DishKind = item.SPLB,
+                                Valid = item.QYBJ,
+                                SNo = item.SPLBDM,
+                                BId = ConfigInfo.Brand_posid,
+                                UTime = now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                DmId = ConfigInfo.Dept_posid
+                            };
+                            //var paramData_update = $"arr={JsonConvert.SerializeObject(data)}";
+                            //var result_update = Common.Post(ConfigInfo.Apiurl_editdishtype, paramData_update);
+                            //if (result_update == null || !result_update.Success)
+                            //{
+                            //    failCount++;
+                            //    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项类型数据修改失败,原因:{result_update?.Msg}\r\n"));
+                            //}
+                            var paramData = $"arr={JsonConvert.SerializeObject(data)}";
+                            var result_add = Common.Post(ConfigInfo.Apiurl_adddishtype, paramData);
+                            if (result_add == null || !result_add.Success)
+                            {
+                                failCount++;
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项类型数据新增失败(第{failCount}条),原因:{result_add?.Msg}\r\n"));
+                                continue;
+                            }
+                            addCount++;
+                        }
+                        SyncInfo.UpdateByTableName("dish_type");
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步成功,本次新增{addCount}条数据，失败{failCount}条\r\n"));
+
+                    }
+                    catch (Exception ex)
+                    {
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInDish_Type:{ex.Message}\r\n"));
+                    }
+                    finally
+                    {
+                        dish_type_sync = false;
                     }
                 }
             });
@@ -811,7 +806,7 @@ namespace DSTool
                 }
                 unit_sync = true;
                 rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"单位数据同步中,请耐心等待......\r\n"));
-                using (var db = new SqlConnection(ConfigInfo.Mysql_connectionstring))
+                using (var db = new SqlConnection(ConfigInfo.ConnectionString))
                 {
                     try
                     {
@@ -833,7 +828,7 @@ namespace DSTool
                         var now = DateTime.Now;
                         if (getFailedData.Count <= 0 && getData.Count <= 0)
                         {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位已经同步过了且只同步一次\r\n"));
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位无数据同步\r\n"));
                             unit_sync = false;
                             return;
                         }
@@ -843,7 +838,7 @@ namespace DSTool
                             var data = new O_dish_unit()
                             {
                                 DuId = item.JLDWNM,
-                                DishUnit = item.JLDW,
+                                DishUnit = item.JLDW.Trim(),
                                 UTime = now.ToString("yyyy-MM-dd HH:mm:ss")
                             };
                             var paramData = $"arr={JsonConvert.SerializeObject(data)}";
@@ -879,88 +874,361 @@ namespace DSTool
                 if (dish_sync)
                 {
                     MessageBox.Show("对不起! 品项数据同步中,请勿重复点击!", "Tips");
+                    return;
                 }
-                else
+                dish_sync = true;
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项数据同步中,请耐心等待......\r\n"));
+                using (var db = new SqlConnection(ConfigInfo.ConnectionString))
                 {
-                    dish_sync = true;
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项数据同步中,请耐心等待......\r\n"));
-                    using (var db = new SqlConnection(ConfigInfo.Mysql_connectionstring))
+                    try
                     {
-                        try
+                        var getLastSyncInfo = SyncInfo.GetInfoByTableName("dish");
+                        if (getLastSyncInfo == null)
                         {
-                            var getLastSyncInfo = SyncInfo.GetInfoByTableName("dish");
-                            if (getLastSyncInfo != null)
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"dish not in syncinfo\r\n"));
+                            dish_sync = false;
+                            return;
+                        }
+                        var getFailedData = SyncFailData.GetListByTableName("dish");
+                        var getData = DA_SP.GetListByLastTime(getLastSyncInfo.LastUpdateTime);
+                        if (getFailedData.Count <= 0 && getData.Count <= 0)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项无数据同步\r\n"));
+                            dish_sync = false;
+                            return;
+                        }
+
+                        int addCount = 0, updateCount = 0, failCount = 0;
+                        //同步以往失败的数据
+                        if (getFailedData.Count > 0)
+                        {
+                            foreach (var item in getFailedData)
                             {
-                                var getFailedData = SyncFailData.GetListByTableName("dish_type");
-                                var getData = DA_SP.GetListByLastTime(getLastSyncInfo.LastUpdateTime);
-                                if (getFailedData.Count > 0 || getData.Count > 0)
+                                var idList = item.IdList.Split(';');
+                                if (idList.Length == 1)
                                 {
-                                    //同步以往失败的数据
-                                    if (getFailedData.Count > 0)
+                                    var itemData = DA_SP.GetById(Convert.ToInt32(idList[0]));
+                                    if (itemData != null)
                                     {
 
-                                    }
-
-                                    //同步数据
-                                    foreach (var item in getData)
-                                    {
-                                        var data = new O_dish()
+                                        var data = new DishInfo()
                                         {
-                                            DId = item.SPNM,
-                                            DkId = item.SPXLNM,
-                                            SNo = item.SP_E,
-                                            BId = ConfigInfo.Brand_posid,
-                                            CTime = item.JDRQ.ToString(),
-                                            DmId = ConfigInfo.Dept_posid,
-                                            Dish = item.SP,
-                                            Alias = item.SPZJM,
-                                            Status = item.QYBJ == 1 ? 1 : 2,
-                                            Seq = item.XH
+                                            Dish = new O_dish()
+                                            {
+                                                DId = itemData.SPNM,
+                                                DkId = itemData.SPXLNM,
+                                                SNo = itemData.SPZJM,
+                                                BId = ConfigInfo.Brand_posid,
+                                                CTime = IntToDateTime(itemData.JDRQ).ToString("yyyy-MM-dd HH:mm:ss"),
+                                                DmId = ConfigInfo.Dept_posid,
+                                                Dish = itemData.SP,
+                                                Alias = itemData.SPZJM,
+                                                Status = itemData.QYBJ == 1 ? 1 : 2,
+                                                Seq = itemData.XH
+                                            },
+                                            MenuDish = new List<O_menudish>()
+                                            { new O_menudish()
+                                                {
+                                                    DId=itemData.SPNM.ToString(),
+                                                    DuId=DA_JLDW.GetIdByUnitName(itemData.JLDW?.Trim()),
+                                                    Price=itemData.LSJ
+                                                }
+                                            }
                                         };
-                                        var paramData_update = $"arr={JsonConvert.SerializeObject(data)}";
-                                        var result_update = Common.Post(ConfigInfo.Apiurl_editdish, paramData_update);
-                                        if (result_update == null || !result_update.Success)
+                                        if (item.FailType == 0)
                                         {
-                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                            var paramData = $"arr={JsonConvert.SerializeObject(data)}";
+                                            var result_add = Common.Post(ConfigInfo.Apiurl_adddish, paramData);
+                                            if (result_add == null || !result_add.Success)
+                                            {
+                                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
+                                                failCount++;
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                SyncFailData.DeleteFailData("dish", item.IdList);
+                                                addCount++;
+                                            }
                                         }
-
-                                        var paramData = $"arr={JsonConvert.SerializeObject(data)}";
-                                        var result_add = Common.Post(ConfigInfo.Apiurl_adddish, paramData);
-                                        if (result_add == null || !result_add.Success)
+                                        else
                                         {
-                                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                            var paramData_update = $"arr={JsonConvert.SerializeObject(data)}";
+                                            var result_update = Common.Post(ConfigInfo.Apiurl_editdish, paramData_update);
+                                            if (result_update == null || !result_update.Success)
+                                            {
+                                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据修改失败(第{failCount + 1}条失败),原因:{result_update?.Msg}\r\n"));
+                                                failCount++;
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                SyncFailData.DeleteFailData("dish", item.IdList);
+                                                updateCount++;
+                                            }
                                         }
                                     }
+                                }
+                            }
+                        }
 
-                                    SyncInfo.UpdateByTableName("dish");
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项数据同步成功\r\n"));
-                                }
-                                else
+                        //同步数据
+                        foreach (var item in getData)
+                        {
+                            var data = new DishInfo()
+                            {
+                                Dish = new O_dish()
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项无数据同步\r\n"));
+                                    DId = item.SPNM,
+                                    DkId = item.SPXLNM,
+                                    SNo = item.SPZJM,
+                                    BId = ConfigInfo.Brand_posid,
+                                    CTime = IntToDateTime(item.JDRQ).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    DmId = ConfigInfo.Dept_posid,
+                                    Dish = item.SP,
+                                    Alias = item.SPZJM,
+                                    Status = item.QYBJ == 1 ? 1 : 2,
+                                    Seq = item.XH
+                                },
+                                MenuDish = new List<O_menudish>()
+                                { new O_menudish()
+                                    {
+                                        DId=item.SPNM.ToString(),
+                                        DuId=DA_JLDW.GetIdByUnitName(item.JLDW?.Trim()),
+                                        Price=item.LSJ
+                                    }
                                 }
+                            };
+
+                            if (item.XGRQ.ToString("yyyyMMdd").CompareTo(IntToDateTime(item.JDRQ).ToString("yyyyMMdd")) > 0)
+                            {
+                                var paramData_update = $"arr={JsonConvert.SerializeObject(data)}";
+                                var result_update = Common.Post(ConfigInfo.Apiurl_editdish, paramData_update);
+                                if (result_update == null || !result_update.Success)
+                                {
+                                    SyncFailData.InsertFailDate(new SyncFailData()
+                                    {
+                                        TableName = "dish",
+                                        IdList = item.SPNM.ToString(),
+                                        FailType = 1,
+                                        FailMessage = result_update?.Msg
+                                    });
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据修改失败(第{failCount + 1}条失败),原因:{result_update?.Msg}\r\n"));
+                                    failCount++;
+                                    continue;
+                                }
+                                updateCount++;
                             }
                             else
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"dish not in syncinfo\r\n"));
+                                var paramData = $"arr={JsonConvert.SerializeObject(data)}";
+                                var result_add = Common.Post(ConfigInfo.Apiurl_adddish, paramData);
+                                if (result_add == null || !result_add.Success)
+                                {
+                                    SyncFailData.InsertFailDate(new SyncFailData()
+                                    {
+                                        TableName = "dish",
+                                        IdList = item.SPNM.ToString(),
+                                        FailType = 0,
+                                        FailMessage = result_add?.Msg
+                                    });
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
+                                    failCount++;
+                                    continue;
+                                }
+                                addCount++;
                             }
                         }
-                        catch (Exception ex)
+
+                        var successMessage = $"品项数据同步成功";
+                        if (addCount > 0)
                         {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInDish:{ex.Message}\r\n"));
+                            successMessage += $",新增了{addCount}条数据";
                         }
-                        finally
+                        if (updateCount > 0)
                         {
-                            dish_sync = false;
+                            successMessage += $",修改了{updateCount}";
                         }
+                        if (failCount > 0)
+                        {
+                            successMessage += $",失败了{failCount}条数据";
+                        }
+
+                        SyncInfo.UpdateByTableName("dish");
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += successMessage + $".\r\n"));
+                    }
+                    catch (Exception ex)
+                    {
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInDish:{ex.Message}\r\n"));
+                    }
+                    finally
+                    {
+                        dish_sync = false;
                     }
                 }
             });
         }
 
+        bool order_sync = false;
         private void btn_OrderMain_Click(object sender, EventArgs e)
         {
+            Task.Run(() =>
+            {
+                if (dish_sync)
+                {
+                    MessageBox.Show("对不起! 订单数据同步中,请勿重复点击!", "Tips");
+                    return;
+                }
+                order_sync = true;
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据同步中,请耐心等待......\r\n"));
+                using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+                {
+                    try
+                    {
+                        var getLastSyncInfo = SyncInfo.GetInfoByTableName("order");
+                        if (getLastSyncInfo == null)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"order not in syncinfo\r\n"));
+                            order_sync = false;
+                            return;
+                        }
+                        var getFailedData = SyncFailData.GetListByTableName("order");
+                        var getData = XS_PZ_ZB.GetListByLastTime(getLastSyncInfo.LastUpdateTime);
+                        if (getFailedData.Count <= 0 && getData.Count <= 0)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单无数据同步\r\n"));
+                            order_sync = false;
+                            return;
+                        }
 
+                        int addCount = 0, updateCount = 0, failCount = 0;
+                        //同步以往失败的数据
+                        if (getFailedData.Count > 0)
+                        {
+                            foreach (var item in getFailedData)
+                            {
+                                var idList = item.IdList.Split(';');
+                                if (idList.Length == 1)
+                                {
+                                    var itemData = DA_SP.GetById(Convert.ToInt32(idList[0]));
+                                    if (itemData != null)
+                                    {
+
+                                        var data = new DishInfo()
+                                        {
+                                            Dish = new O_dish()
+                                            {
+                                                DId = itemData.SPNM,
+                                                DkId = itemData.SPXLNM,
+                                                SNo = itemData.SPZJM,
+                                                BId = ConfigInfo.Brand_posid,
+                                                CTime = IntToDateTime(itemData.JDRQ).ToString("yyyy-MM-dd HH:mm:ss"),
+                                                DmId = ConfigInfo.Dept_posid,
+                                                Dish = itemData.SP,
+                                                Alias = itemData.SPZJM,
+                                                Status = itemData.QYBJ == 1 ? 1 : 2,
+                                                Seq = itemData.XH
+                                            },
+                                            MenuDish = new List<O_menudish>()
+                                            { new O_menudish()
+                                                {
+                                                    DId=itemData.SPNM.ToString(),
+                                                    DuId=DA_JLDW.GetIdByUnitName(itemData.JLDW?.Trim()),
+                                                    Price=itemData.LSJ
+                                                }
+                                            }
+                                        };
+                                        if (item.FailType == 0)
+                                        {
+                                            var paramData = $"arr={JsonConvert.SerializeObject(data)}";
+                                            var result_add = Common.Post(ConfigInfo.Apiurl_adddish, paramData);
+                                            if (result_add == null || !result_add.Success)
+                                            {
+                                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
+                                                failCount++;
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                SyncFailData.DeleteFailData("order", item.IdList);
+                                                addCount++;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            var paramData_update = $"arr={JsonConvert.SerializeObject(data)}";
+                                            var result_update = Common.Post(ConfigInfo.Apiurl_editdish, paramData_update);
+                                            if (result_update == null || !result_update.Success)
+                                            {
+                                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据修改失败(第{failCount + 1}条失败),原因:{result_update?.Msg}\r\n"));
+                                                failCount++;
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                SyncFailData.DeleteFailData("order", item.IdList);
+                                                updateCount++;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //同步数据
+                        foreach (var item in getData)
+                        {
+                            if (!int.TryParse(item.JYH, out int oid))
+                            {
+                                continue;
+                            }
+                            var data = OrderInfo.GetData(item, ConfigInfo.Dept_posid);
+                            
+                            var paramData = $"arr={JsonConvert.SerializeObject(data)}";
+                            var result_add = Common.Post(ConfigInfo.Apiurl_addordermain, paramData);
+                            if (result_add == null || !result_add.Success)
+                            {
+                                SyncFailData.InsertFailDate(new SyncFailData()
+                                {
+                                    TableName = "order",
+                                    IdList = item.JYH,
+                                    FailType = 0,
+                                    FailMessage = result_add?.Msg
+                                });
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
+                                failCount++;
+                                continue;
+                            }
+                            addCount++;
+                        }
+
+                        var successMessage = $"订单数据同步成功";
+                        if (addCount > 0)
+                        {
+                            successMessage += $",新增了{addCount}条数据";
+                        }
+                        if (updateCount > 0)
+                        {
+                            successMessage += $",修改了{updateCount}";
+                        }
+                        if (failCount > 0)
+                        {
+                            successMessage += $",失败了{failCount}条数据";
+                        }
+
+                        SyncInfo.UpdateByTableName("order");
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += successMessage + $".\r\n"));
+                    }
+                    catch (Exception ex)
+                    {
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInOrder:{ex.Message}\r\n"));
+                    }
+                    finally
+                    {
+                        order_sync = false;
+                    }
+                }
+            });
         }
 
         private void btn_OrderDetail_Click(object sender, EventArgs e)
@@ -1048,6 +1316,7 @@ namespace DSTool
             var brand_status = ConfigInfo.Brand_status;
             var brand_subject = ConfigInfo.Brand_subject;
             var brand_posid = ConfigInfo.Brand_posid;
+            var brand_seq = ConfigInfo.Brand_seq;
 
             var area_name = ConfigInfo.Area_name;
             var area_level = ConfigInfo.Area_level;
@@ -1066,7 +1335,7 @@ namespace DSTool
             var dept_posid = ConfigInfo.Dept_posid;
 
             bool brandFlag = false, areaFlag = false, deptFlag = false;
-            if (!string.IsNullOrEmpty(brand_name) && !string.IsNullOrEmpty(brand_status) && !string.IsNullOrEmpty(brand_subject) && !string.IsNullOrEmpty(brand_posid.ToString()))
+            if (!string.IsNullOrEmpty(brand_name) && !string.IsNullOrEmpty(brand_status) && !string.IsNullOrEmpty(brand_subject) && !string.IsNullOrEmpty(brand_posid.ToString()) && !string.IsNullOrEmpty(brand_seq.ToString()))
             {
                 brandFlag = true;
             }
@@ -1081,13 +1350,14 @@ namespace DSTool
             if (brandFlag || areaFlag || deptFlag)
             {
                 var selectBrandSql = @"select top 1 brand_name,brand_status,brand_subject,brand_posid from brand_default where brand_name=@brand_name and brand_status=@brand_status and brand_subject=@brand_subject and brand_posid=@brand_posid";
-                var insertBrandSql = @"insert into brand_default(brand_name,brand_status,brand_subject,brand_posid,createtime,lastupdatetime) values(@brand_name,@brand_status,@brand_subject,@brand_posid,@createtime,@lastupdatetime)";
+                var insertBrandSql = @"insert into brand_default(brand_name,brand_status,brand_subject,brand_posid,brand_seq,createtime,lastupdatetime) values(@brand_name,@brand_status,@brand_subject,@brand_posid,@brand_seq,@createtime,@lastupdatetime)";
                 var paramBrand = new DynamicParameters();
                 var dateTime = DateTime.Now;
                 paramBrand.Add("brand_name", brand_name);
                 paramBrand.Add("brand_status", brand_status);
                 paramBrand.Add("brand_subject", brand_subject);
                 paramBrand.Add("brand_posid", brand_posid);
+                paramBrand.Add("brand_seq", brand_seq);
                 paramBrand.Add("createtime", dateTime);
                 paramBrand.Add("lastupdatetime", dateTime);
 
@@ -1185,6 +1455,22 @@ namespace DSTool
             }
         }
 
+        DateTime IntToDateTime(int date)
+        {
+            if (date < 10000000 || date > 99999999)
+            {
+                return new DateTime(1900, 1, 1, 0, 0, 0);
+            }
+            try
+            {
+                return Convert.ToDateTime(date.ToString().Insert(4, "-").Insert(7, "-") + " 00:00:00");
+            }
+            catch (Exception)
+            {
+                return new DateTime(1900, 1, 1, 0, 0, 0);
+            }
+        }
+
         #region 提取函数
         private void ExecteDataSync(List<object> dataList_update, List<object> dataList_add, string tips, string tableName)
         {
@@ -1220,7 +1506,7 @@ namespace DSTool
 
         private int UpdateSyncInfo(string tableName)
         {
-            using (var db = new SqlConnection(ConfigInfo.Mysql_connectionstring))
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
             {
                 var updateLastSyncSql = $"update syncinfo set lastupdatetime=@lastupdatetime where tablename=@tablename";
                 var paramUpdate = new DynamicParameters();

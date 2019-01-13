@@ -19,7 +19,7 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 订单状态（0无效,1待核算,2已算单,3已结单,4退菜取消 Default 1 传2 NO
         /// </summary>
-        public int OrderStatus { get; set; }
+        public int OrderStatus { get; set; } = 1;
 
         /// <summary>
         /// 就餐人数 Default 1 NO
@@ -29,42 +29,42 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 已付款金额 Default 0.0 NO
         /// </summary>
-        public decimal PayedAmount { get; set; }
+        public decimal PayedAmount { get; set; } = 0;
 
         /// <summary>
         /// 订单有效收入 Default 0.0 NO
         /// </summary>
-        public decimal RealRecieve { get; set; }
+        public decimal RealRecieve { get; set; } = 0;
 
         /// <summary>
         /// 应收 Default 0.0 NO
         /// </summary>
-        public decimal Total { get; set; }
+        public decimal Total { get; set; } = 0;
 
         /// <summary>
         /// 实收(包含实收品项,实收服务费,实收包间费) Default 0.0 NO
         /// </summary>
-        public decimal Cost { get; set; }
+        public decimal Cost { get; set; } = 0;
 
         /// <summary>
         /// 应收品项 Default 0.0 NO
         /// </summary>
-        public decimal TotalDish { get; set; }
+        public decimal TotalDish { get; set; } = 0;
 
         /// <summary>
         /// 实收品项 Default 0.0 NO
         /// </summary>
-        public decimal CostDish { get; set; }
+        public decimal CostDish { get; set; } = 0;
 
         /// <summary>
         /// 应收服务费 Default 0.0 NO
         /// </summary>
-        public decimal TotalService { get; set; }
+        public decimal TotalService { get; set; } = 0;
 
         /// <summary>
         /// 实收服务费 Default 0.0 NO
         /// </summary>
-        public decimal CostService { get; set; }
+        public decimal CostService { get; set; } = 0;
 
         /// <summary>
         /// 开台时间 NO
@@ -94,7 +94,7 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 就餐方式(1堂食2打包3外卖) Default 1 NO
         /// </summary>
-        public string OrderType { get; set; }
+        public string OrderType { get; set; } = "1";
 
         /// <summary>
         /// 门店ID sls_shop,外键 NO
@@ -109,12 +109,12 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 额外折让 Default '0.00' YES
         /// </summary>
-        public decimal ExtraDiscount { get; set; }
+        public decimal ExtraDiscount { get; set; } = 0;
 
         /// <summary>
         /// 折扣率 Default '0.00' YES
         /// </summary>
-        public decimal Rate { get; set; }
+        public decimal Rate { get; set; } = 1;
 
         /// <summary>
         /// 桌台 YES
@@ -124,22 +124,22 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 原订单号 YES
         /// </summary>
-        public int CancelOriginoId { get; set; }
+        public int CancelOriginoId { get; set; } = 0;
 
         /// <summary>
         /// 反结账单号 YES
         /// </summary>
-        public int CancelantioId { get; set; }
+        public int CancelantioId { get; set; } = 0;
 
         /// <summary>
         /// 新单号 YES
         /// </summary>
-        public int CancelnewoId { get; set; }
+        public int CancelnewoId { get; set; } = 0;
 
         /// <summary>
         /// 成本额 Default '0.00' YES
         /// </summary>
-        public decimal CostMoney { get; set; }
+        public decimal CostMoney { get; set; } = 0;
 
         /// <summary>
         /// 手动抹零 YES
@@ -154,6 +154,6 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 标记问题订单 NO
         /// </summary>
-        public int Flag { get; set; }
+        public int Flag { get; set; } = 0;
     }
 }

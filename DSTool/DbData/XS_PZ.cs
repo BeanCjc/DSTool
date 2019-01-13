@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 
 namespace DSTool.DbData
 {
@@ -175,5 +177,31 @@ namespace DSTool.DbData
         /// 规格 YES
         /// </summary>
         public string GG { get; set; }
+
+        /// <summary>
+        /// 计量单位
+        /// </summary>
+        public string JLDW { get; set; }
+
+        public static List<XS_PZ> GetListByOrderId(string orderId)
+        {
+            var result = new List<XS_PZ>();
+            if (string.IsNullOrEmpty(orderId))
+            {
+                return result;
+            }
+            var sql = @"SELECT A.JYH,A.XH,A.GZBJ,A.SPNM,A.SPNM_SSTC,A.ZPBJ,A.ZPSSSPNM,A.XSSL,A.ZPXSSL,A.LSJ,A.CXXSSL,A.CXJ,A.XSJ,A.ZKL,A.XSJE,A.XSYH,A.CBJE,B.JLDW
+                          FROM XS_PZ A
+                    INNER JOIN DA_SP B 
+                            ON A.SPNM=B.SPNM
+                         WHERE JYH=@JYS";
+            var param = new DynamicParameters();
+            param.Add("JYH", orderId);
+            using (var db=new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                result= db.Query<XS_PZ>(sql, param).ToList();
+                return result;
+            }
+        }
     }
 }

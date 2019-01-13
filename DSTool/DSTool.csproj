@@ -92,11 +92,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestEntity\C_department.cs" />
     <Compile Include="RequestEntity\C_pay_type.cs" />
+    <Compile Include="RequestEntity\DishInfo.cs" />
+    <Compile Include="RequestEntity\OrderInfo.cs" />
     <Compile Include="RequestEntity\O_business_range.cs" />
     <Compile Include="RequestEntity\O_dish.cs" />
     <Compile Include="RequestEntity\O_dish_kind.cs" />
     <Compile Include="RequestEntity\O_dish_unit.cs" />
-    <Compile Include="RequestEntity\O_menu_dish.cs" />
+    <Compile Include="RequestEntity\O_menudish.cs" />
     <Compile Include="RequestEntity\O_order_history.cs" />
     <Compile Include="RequestEntity\O_order_item_history.cs" />
     <Compile Include="RequestEntity\ResponseResult.cs" />

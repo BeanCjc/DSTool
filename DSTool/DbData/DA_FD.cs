@@ -212,19 +212,18 @@ namespace DSTool.DbData
 
         public static List<DA_FD> GetListByLastTime(string lastTime)
         {
-            ////CLRQ是int,目前不知道几位，可能需要转换
-            //var sql= @"select FDNM,FD,FDDM,QYBZ,QYNM,DZ from DA_FD where CLRQ>=@CLRQ";
-            //var param = new DynamicParameters();
-            //param.Add("CLRQ", lastTime);
-            //using (var db=new SqlConnection(ConfigInfo.Mysql_connectionstring))
-            //{
-            //    return db.Query<DA_FD>(sql, param).ToList();
-            //}
-            var sql = @"select FDNM,FD,FDDM,QYBZ,QYNM,DZ from DA_FD";
+            var sql = @"select FDNM,FD,FDDM,QYBJ,QYNM,DZ from DA_FD where XGSJ>=@XGSJ";
+            var param = new DynamicParameters();
+            param.Add("XGSJ", lastTime);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))
             {
-                return db.Query<DA_FD>(sql).ToList();
+                return db.Query<DA_FD>(sql, param).ToList();
             }
+            //var sql = @"select FDNM,FD,FDDM,QYBJ,QYNM,DZ from DA_FD";
+            //using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            //{
+            //    return db.Query<DA_FD>(sql).ToList();
+            //}
         }
     }
 }

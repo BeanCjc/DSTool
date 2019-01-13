@@ -167,9 +167,9 @@ namespace DSTool.DbData
 
         public static List<DA_SPLB> GetListByLastTime(string lastTime)
         {
-            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where XGRQ>=@lasttime or JSRQ>=@lasttime";
+            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where XGRQ>=@lasttime";
             var param = new DynamicParameters();
-            param.Add("lasttiem", lastTime);
+            param.Add("lasttime", lastTime);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))
             {
                 return db.Query<DA_SPLB>(sql, param).ToList();
