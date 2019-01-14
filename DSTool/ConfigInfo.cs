@@ -39,7 +39,7 @@ namespace DSTool
             configInfo.Apiurl_adddish = Common.GetAppConfig("apiurl")?.ToString() + "?do=dish&apikey=sign&type=add";
             configInfo.Apiurl_addpayway = Common.GetAppConfig("apiurl")?.ToString() + "?do=paytype&apikey=sign&type=add";
             configInfo.Apiurl_adduser = Common.GetAppConfig("apiurl")?.ToString() + "?do=user&apikey=sign&type=add";
-            configInfo.Apiurl_addordermain = Common.GetAppConfig("apiurl")?.ToString() + "?do=orderInfo&apikey=sign&type=add";
+            configInfo.Apiurl_addordermain = Common.GetAppConfig("apiurl")?.ToString() + "?do=orderInfo&apikey=sign";
 
             configInfo.Apiurl_editbrand = Common.GetAppConfig("apiurl")?.ToString() + "?do=brand&apikey=sign&type=edit";
             configInfo.Apiurl_editarea = Common.GetAppConfig("apiurl")?.ToString() + "?do=area&apikey=sign&type=edit";
@@ -56,7 +56,7 @@ namespace DSTool
             configInfo.Brand_name = Common.GetAppConfig("brand_name")?.ToString();
             configInfo.Brand_status = Common.GetAppConfig("brand_status")?.ToString();
             configInfo.Brand_subject = Common.GetAppConfig("brand_subject")?.ToString();
-            configInfo.Brand_posid = Convert.ToInt32(Common.GetAppConfig("brand_posid"));
+            configInfo.Brand_posid =Common.GetAppConfig("brand_posid");
             configInfo.Brand_seq = Convert.ToInt32(Common.GetAppConfig("brand_seq"));
 
             configInfo.Area_table = Common.GetAppConfig("area_table")?.ToString();
@@ -66,7 +66,7 @@ namespace DSTool
             configInfo.Area_seq = Convert.ToInt32(Common.GetAppConfig("area_seq"));
             configInfo.Area_status = Common.GetAppConfig("area_status")?.ToString();
             configInfo.Area_subject = Common.GetAppConfig("area_subject")?.ToString();
-            configInfo.Area_posid = Convert.ToInt32(Common.GetAppConfig("area_posid"));
+            configInfo.Area_posid = Common.GetAppConfig("area_posid");
 
             configInfo.Dept_table = Common.GetAppConfig("dept_table")?.ToString();
             configInfo.Dept_name = Common.GetAppConfig("dept_name")?.ToString();
@@ -112,7 +112,7 @@ namespace DSTool
         public string Brand_name { get; set; }
         public string Brand_status { get; set; }
         public string Brand_subject { get; set; }
-        public int Brand_posid { get; set; }
+        public string Brand_posid { get; set; }
         public int Brand_seq { get; set; }
 
         public string Area_table { get; set; }
@@ -122,7 +122,7 @@ namespace DSTool
         public int Area_seq { get; set; }
         public string Area_status { get; set; }
         public string Area_subject { get; set; }
-        public int Area_posid { get; set; }
+        public string Area_posid { get; set; }
 
         public string Dept_table { get; set; }
         public string Dept_name { get; set; }

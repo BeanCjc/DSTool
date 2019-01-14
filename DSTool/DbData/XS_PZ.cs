@@ -194,7 +194,7 @@ namespace DSTool.DbData
                           FROM XS_PZ A
                     INNER JOIN DA_SP B 
                             ON A.SPNM=B.SPNM
-                         WHERE JYH=@JYS";
+                         WHERE JYH=@JYH";
             var param = new DynamicParameters();
             param.Add("JYH", orderId);
             using (var db=new SqlConnection(ConfigInfo.ConnectionString))

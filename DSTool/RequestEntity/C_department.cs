@@ -13,7 +13,8 @@ namespace DSTool.RequestEntity
         public int Status { get; set; }
         public int Seq { get; set; }
         public string Sno { get; set; }
-        public int BId { get; set; }
-        public int CdmId { get; set; }
+        public string BId { get; set; }
+        public string Sid { get; set; }
+        public string CdmId { get; set; }
     }
 }

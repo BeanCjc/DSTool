@@ -199,9 +199,14 @@ namespace DSTool.DbData
         /// </summary>
         public int FGSYKJ { get; set; }
 
+        /// <summary>
+        /// 修改时间
+        /// </summary>
+        public DateTime XGSJ { get; set; }
+
         public static DA_FD GetById(int id)
         {
-            var sql= @"select FDNM,FD,FDDM,QYBZ,QYNM,DZ from DA_FD where FDNM=@FDNM";
+            var sql= @"select FDNM,FD,FDDM,QYBJ,QYNM,DZ,XGSJ from DA_FD where FDNM=@FDNM";
             var param = new DynamicParameters();
             param.Add("FDNM", id);
             using (var db=new SqlConnection(ConfigInfo.ConnectionString))
@@ -212,7 +217,7 @@ namespace DSTool.DbData
 
         public static List<DA_FD> GetListByLastTime(string lastTime)
         {
-            var sql = @"select FDNM,FD,FDDM,QYBJ,QYNM,DZ from DA_FD where XGSJ>=@XGSJ";
+            var sql = @"select FDNM,FD,FDDM,QYBJ,QYNM,DZ,XGSJ from DA_FD where XGSJ>=@XGSJ";
             var param = new DynamicParameters();
             param.Add("XGSJ", lastTime);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))

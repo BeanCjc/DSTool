@@ -243,6 +243,20 @@ namespace DSTool.DbData
         /// </summary>
         public List<XS_PZ> Order_Items { get; set; }
 
+        public static XS_PZ_ZB GetById(string id)
+        {
+            var sql = @" SELECT JYH,CZRQ,CZSJ,FDNM,CZRQ_XS,CZSJ_XS,XSRQ,RS,ZTNM,XSJE,XSYH,
+                                MLJE,/*XJJE,CZKJE, YHQJE,QTJE,MDJE,QDJE,JE1,*/BCJE,RJRQ,BXJE,FJZBJTRUE,BZ,ZT 
+                           FROM XS_PZ_ZB
+                          WHERE JYH=@JYH";
+            var param = new DynamicParameters();
+            param.Add("JYH", id);
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Query<XS_PZ_ZB>(sql, param).FirstOrDefault();
+            }
+
+        }
         public static List<XS_PZ_ZB> GetListByLastTime(DateTime lastTime)
         {
             var sql = @" SELECT JYH,CZRQ,CZSJ,FDNM,CZRQ_XS,CZSJ_XS,XSRQ,RS,ZTNM,XSJE,XSYH,

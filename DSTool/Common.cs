@@ -34,7 +34,7 @@ namespace DSTool
             return null;
         }
 
-        public static string MD5Encrypt(string str,int bit)
+        public static string MD5Encrypt(string str, int bit)
         {
             var md5 = MD5.Create();
             var byteArray = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
@@ -43,7 +43,7 @@ namespace DSTool
             {
                 sb.Append(item.ToString("x2"));
             }
-            if (bit==16)
+            if (bit == 16)
             {
                 return sb.ToString().Substring(8, 16);
             }
@@ -66,7 +66,7 @@ namespace DSTool
             }
             if (!ulr.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase))
             {
-                return new ResponseResult() { Success = false,  Msg = "url格式不正确", Data = null };
+                return new ResponseResult() { Success = false, Msg = "url格式不正确", Data = null };
             }
             try
             {
@@ -116,5 +116,23 @@ namespace DSTool
             return Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Unspecified)).TotalMilliseconds).ToString();
         }
 
+        public static DateTime IntToDateTime(int date, int time = 0)
+        {
+
+            if (date < 10000000 || date > 99999999)
+            {
+                return new DateTime(1900, 1, 1, 0, 0, 0);
+            }
+            try
+            {
+                var dateTimeString = date.ToString().Insert(4, "-").Insert(7, "-");//日期
+                dateTimeString += " " + time.ToString().PadLeft(6, '0').Insert(2, ":").Insert(5, ":");//时间
+                return Convert.ToDateTime(dateTimeString);
+            }
+            catch (Exception)
+            {
+                return new DateTime(1900, 1, 1, 0, 0, 0);
+            }
+        }
     }
 }

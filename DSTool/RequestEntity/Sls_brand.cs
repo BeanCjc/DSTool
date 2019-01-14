@@ -14,7 +14,7 @@ namespace DSTool.RequestEntity
         public string Utime { get; set; }
         public string Subject { get; set; }
         public string Memo { get; set; }
-        public int CbId { get; set; }
+        public string CbId { get; set; }
 
     }
 }

@@ -39,7 +39,7 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 品牌ID sls_brand,外键 NO
         /// </summary>
-        public int BId { get; set; }
+        public string BId { get; set; }
 
         /// <summary>
         /// 更新时间 YES

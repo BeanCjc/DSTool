@@ -79,7 +79,7 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 订单ID NO
         /// </summary>
-        public int OId { get; set; }
+        public string OId { get; set; }
 
         /// <summary>
         /// 门店ID sls_shop,外键 NO

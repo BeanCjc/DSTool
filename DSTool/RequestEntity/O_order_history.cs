@@ -14,7 +14,7 @@ namespace DSTool.RequestEntity
         /// <summary>
         /// 订单ID 主键 NO
         /// </summary>
-        public int OId { get; set; }
+        public string OId { get; set; }
 
         /// <summary>
         /// 订单状态（0无效,1待核算,2已算单,3已结单,4退菜取消 Default 1 传2 NO

@@ -294,7 +294,7 @@ namespace DSTool.DbData
         /// </summary>
         public int JSSJ { get; set; }
 
-        public static DA_SP GetById(int id)
+        public static DA_SP GetById(string id)
         {
 
             var sql = @"select SPNM,SPXLNM,SP_E,JDRQ,SP,SPZJM,QYBJ,XH,LSJ,JLDW from DA_SP where SPNM=@SPNM";

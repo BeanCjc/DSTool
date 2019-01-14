@@ -16,9 +16,11 @@ namespace DSTool.DbData
 
         public bool IsSynced { get; set; }
 
+        public string IdList { get; set; }
+
         public static SyncInfo GetInfoByTableName(string tableName)
         {
-            var sql = @"select top 1 tablename,lastupdatetime,issynced from syncinfo where tablename=@tablename";
+            var sql = @"select top 1 tablename,lastupdatetime,issynced,idlist from syncinfo where tablename=@tablename";
             var param = new DynamicParameters();
             param.Add("tablename", tableName);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))
@@ -27,17 +29,20 @@ namespace DSTool.DbData
             }
         }
 
-        public static bool UpdateByTableName(string tableName, int isSynced = 0)
+        public static bool UpdateByTableName(string tableName, int isSynced = 0, string idList = "")
         {
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))
             {
-                var sql = @"update syncinfo set lastupdatetime=@lastupdatetime,issynced=@issynced where tablename=@tablename";
+                var sql = @"update syncinfo set lastupdatetime=@lastupdatetime,issynced=@issynced,idlist=@idlist where tablename=@tablename";
                 var param = new DynamicParameters();
                 param.Add("issynced", isSynced);
                 param.Add("lastupdatetime", DateTime.Now);
                 param.Add("tablename", tableName);
+                param.Add("idlist", idList);
                 return db.Execute(sql, param) > 0;
             }
         }
+
+
     }
 }

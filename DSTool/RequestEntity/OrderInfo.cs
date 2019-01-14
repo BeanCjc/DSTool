@@ -21,18 +21,18 @@ namespace DSTool.RequestEntity
 
         public static OrderInfo GetData(XS_PZ_ZB main, int deptId)
         {
-            if (main == null || main.JYH == null || !int.TryParse(main.JYH, out int oid))
+            if (main == null || main.JYH?.Trim() == null /*|| !int.TryParse(main.JYH, out int oid)*/)
             {
                 return new OrderInfo() { O_Order = new O_order_history(), O_Order_Item = new List<O_order_item_history>() };
             }
-            var orderItemList = XS_PZ.GetListByOrderId(main.JYH);
+            var orderItemList = XS_PZ.GetListByOrderId(main.JYH.Trim());
             var orderItem = new List<O_order_item_history>();
             var sid = main.FDNM;
             foreach (var detail in orderItemList)
             {
                 orderItem.Add(new O_order_item_history
                 {
-                    OiId = detail.JYH.ToString() + detail.XH.ToString(),//必须字段
+                    OiId = detail.JYH.Trim() + detail.XH.ToString(),//必须字段
                     ItemStatus = 2,//必须字段
                     OiType = 1,//必须字段
                     Price = detail.XSJ,//必须字段
@@ -42,7 +42,7 @@ namespace DSTool.RequestEntity
                     DId = detail.SPNM,//必须字段
                     DuId = Convert.ToInt32(DA_JLDW.GetIdByUnitName(detail.JLDW)),//必须字段
                     DmId = deptId,//必须字段
-                    OId = Convert.ToInt32(detail.JYH),//必须字段
+                    OId = detail.JYH.Trim(),//必须字段
                     SId = sid//必须字段
                              //可选字段
 
@@ -52,13 +52,13 @@ namespace DSTool.RequestEntity
             {
                 O_Order = new O_order_history()
                 {
-                    OId = oid,//必须字段
+                    OId = main.JYH.Trim(),//必须字段
                     OrderStatus = 3,//必须字段
                     People = main.RS,//必须字段
                     Total = main.XSJE,//必须字段
                     Cost = main.XSJE,//必须字段
-                    NewTime = Convert.ToDateTime(main.CZRQ.ToString() + main.CZSJ.ToString()),//必须字段
-                    CheckoutTime = Convert.ToDateTime(main.CZRQ_XS.ToString() + main.CZSJ_XS.ToString()),//必须字段
+                    NewTime = Common.IntToDateTime(main.CZRQ + main.CZSJ),//必须字段
+                    CheckoutTime = Common.IntToDateTime(main.CZRQ_XS + main.CZSJ_XS),//必须字段
                     OrderType = "1",//必须字段
                     SId = sid//必须字段
                              //可选字段
