@@ -55,7 +55,7 @@ namespace DSTool.DbData
 
         public static Dept_default GetById(int id)
         {
-            var sql = @"select dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_posid,createtime,lastupdatetime from dept_default where lastupdatetime>=@lastupdatetime";
+            var sql = @"select dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_sid,dept_posid,createtime,lastupdatetime from dept_default where lastupdatetime>=@lastupdatetime";
             var param = new DynamicParameters();
             param.Add("lastupdatetime", id);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))
@@ -66,7 +66,7 @@ namespace DSTool.DbData
 
         public static List<Dept_default> GetListByLastTime(string lastTime)
         {
-            var sql = @"select dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_posid,createtime,lastupdatetime from dept_default where lastupdatetime>=@lastupdatetime";
+            var sql = @"select dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_sid,dept_posid,createtime,lastupdatetime from dept_default where lastupdatetime>=@lastupdatetime";
             var param = new DynamicParameters();
             param.Add("lastupdatetime", lastTime);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))

@@ -67,5 +67,55 @@ namespace DSTool.RequestEntity
                 O_Order_Item = orderItem
             };
         }
+
+        public static List<OrderInfo> GetListData(List<XS_PZ_ZB> mains, int deptId)
+        {
+            var result = new List<OrderInfo>();
+            foreach (var main in mains)
+            {
+                var orderItemList = XS_PZ.GetListByOrderId(main.JYH.Trim());
+                var orderItem = new List<O_order_item_history>();
+                var sid = main.FDNM;
+                foreach (var detail in orderItemList)
+                {
+                    orderItem.Add(new O_order_item_history
+                    {
+                        OiId = detail.JYH.Trim() + detail.XH.ToString(),//必须字段
+                        ItemStatus = 2,//必须字段
+                        OiType = 1,//必须字段
+                        Price = detail.XSJ,//必须字段
+                        Amount = detail.XSSL,//必须字段
+                        OiTotal = detail.XSJE,//必须字段
+                        OiCost = detail.XSJE,//必须字段
+                        DId = detail.SPNM,//必须字段
+                        DuId = Convert.ToInt32(DA_JLDW.GetIdByUnitName(detail.JLDW)),//必须字段
+                        DmId = deptId,//必须字段
+                        OId = detail.JYH.Trim(),//必须字段
+                        SId = sid//必须字段
+                                 //可选字段
+
+                    });
+                }
+                result.Add(new OrderInfo()
+                {
+                    O_Order = new O_order_history()
+                    {
+                        OId = main.JYH.Trim(),//必须字段
+                        OrderStatus = 3,//必须字段
+                        People = main.RS,//必须字段
+                        Total = main.XSJE,//必须字段
+                        Cost = main.XSJE,//必须字段
+                        NewTime = Common.IntToDateTime(main.CZRQ + main.CZSJ),//必须字段
+                        CheckoutTime = Common.IntToDateTime(main.CZRQ_XS + main.CZSJ_XS),//必须字段
+                        OrderType = "1",//必须字段
+                        SId = sid//必须字段
+                                 //可选字段
+
+                    },
+                    O_Order_Item = orderItem
+                });
+            }
+            return result;
+        }
     }
 }

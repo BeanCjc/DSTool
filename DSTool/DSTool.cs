@@ -18,6 +18,7 @@ using System.Net;
 using Newtonsoft.Json;
 using System.Threading;
 using System.Data.SqlClient;
+using System.IO;
 
 namespace DSTool
 {
@@ -32,11 +33,27 @@ namespace DSTool
         static string default_tablename_brand = Common.GetAppConfig("brand_table")?.ToString();
         static string default_tablename_area = Common.GetAppConfig("area_table")?.ToString();
         static string default_tablename_dept = Common.GetAppConfig("dept_table")?.ToString();
+        static System.Threading.Timer timerBase;
+        static System.Threading.Timer timerOrder;
+        static System.Threading.Timer timerRecordLog;
 
         private void MSTool_Load(object sender, EventArgs e)
         {
-            var fileName = Directory.GetCurrentDirectory();
-            var watcher = new FileSystemWatcher(fileName, "DSTool.exe.config")
+            label1.Text = @"首次同步请严格按照如下顺序进行同步:
+
+1.品牌,区域->门店
+
+2.品牌->餐段
+
+3.品牌->部门
+
+4.品牌->部门->品项类型,品项单位->品项
+
+5.订单
+
+程序启动后半小时将启动自动同步,基础数据将在每条的凌晨1点到2点之间同步两次,订单数据5分钟同步一次.";
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var watcher = new FileSystemWatcher(currentDirectory, "DSTool.exe.config")
             {
                 EnableRaisingEvents = true
 
@@ -201,6 +218,51 @@ namespace DSTool
             SetButtonEnable();
             //初始化数据
             InitData();
+
+            #region 添加两个定时器,半小时后启动,基础定时器每日凌晨1点到两点之间同步两次,订单定时器5分钟同步一次
+            timerBase = new System.Threading.Timer(o =>
+               {
+                   if (DateTime.Now.Hour == 1)
+                   {
+                       btn_Brand_Click(null, null);
+                       btn_Area_Click(null, null);
+                       btn_Dept_Click(null, null);
+                       btn_Store_Click(null, null);
+                       btn_MealTime_Click(null, null);
+                       btn_DishType_Click(null, null);
+                       btn_Unit_Click(null, null);
+                       btn_Dish_Click(null, null);
+                   }
+               }, null, 1800000, 1800000);
+
+            timerOrder = new System.Threading.Timer(o =>
+              {
+                  btn_OrderMain_Click(null, null);
+              }, null, 1800000, 300000);
+            timerRecordLog = new System.Threading.Timer(o =>
+              {
+                  if (DateTime.Now.Hour == 18)
+                  {
+                      //记录日志
+                      Directory.CreateDirectory(currentDirectory + "\\Log");
+                      var fileName = currentDirectory + $"\\Log\\{DateTime.Now.ToString("yyyyMMdd") + ".txt"}";
+                      if (!File.Exists(fileName))
+                      {
+                          var fs = File.Create(fileName);
+                          fs.Close();
+                      }
+                      if (File.Exists(fileName))
+                      {
+                          var content = "";
+                          rtxt_message.Invoke(new Action(() => content = rtxt_message.Text));
+                          var sw = new StreamWriter(fileName, true, Encoding.UTF8);
+                          sw.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "\r\n" + content);
+                          sw.Close();
+                      }
+                      rtxt_message.Invoke(new Action(() => rtxt_message.Clear()));
+                  }
+              }, null, 2000, 10000);
+            #endregion
         }
 
         bool brand_sync = false;//true:品牌 正在同步中
@@ -239,6 +301,7 @@ namespace DSTool
                         return;
                     }
                     bool flag = true;
+                    //int addCount = 0, updateCount = 0, failCount = 0;
 
                     //同步以往失败的数据
                     if (getFailedData.Count > 0)
@@ -303,7 +366,7 @@ namespace DSTool
                             Subject = item.Brand_subject,
                             CbId = item.Brand_posid
                         };
-                        if (item.CreateTime == item.LastUpdateTime)
+                        if (item.CreateTime == item.LastUpdateTime || item.CreateTime >= getLastSyncInfo.LastUpdateTime)
                         {
                             var paramData = $"arr={JsonConvert.SerializeObject(data)}";
                             var result_add = Common.Post(ConfigInfo.Apiurl_addbrand, paramData);
@@ -445,7 +508,7 @@ namespace DSTool
                             Subject = item.Area_subject,
                             CaId = item.Area_posid
                         };
-                        if (item.CreateTime == item.LastUpdateTime)
+                        if (item.CreateTime == item.LastUpdateTime || item.CreateTime >= getLastSyncInfo.LastUpdateTime)
                         {
                             var paramData = $"arr={JsonConvert.SerializeObject(data)}";
                             var result_add = Common.Post(ConfigInfo.Apiurl_addarea, paramData);
@@ -668,7 +731,7 @@ namespace DSTool
                         }
                         if (updateCount > 0)
                         {
-                            successMessage += $",修改了{updateCount}";
+                            successMessage += $",修改了{updateCount}条数据";
                         }
                         if (failCount > 0)
                         {
@@ -738,7 +801,7 @@ namespace DSTool
                     else
                     {
                         SyncInfo.UpdateByTableName("meal_time", 1);
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步成功\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步成功,新增了一条数据\r\n"));
                     }
                 }
                 catch (Exception ex)
@@ -805,6 +868,7 @@ namespace DSTool
                                 Seq = itemData.Dept_seq,
                                 Sno = itemData.Dept_sno,
                                 BId = itemData.Dept_bid,
+                                Sid = itemData.Dept_sid,
                                 CdmId = itemData.Dept_posid
                             };
                             if (item.FailType == 0)
@@ -848,9 +912,10 @@ namespace DSTool
                             Seq = item.Dept_seq,
                             Sno = item.Dept_sno,
                             BId = item.Dept_bid,
+                            Sid = item.Dept_sid,
                             CdmId = item.Dept_posid
                         };
-                        if (item.CreateTime == item.LastUpdateTime)
+                        if (item.CreateTime == item.LastUpdateTime || item.CreateTime >= getLastSyncInfo.LastUpdateTime)
                         {
                             var paramData = $"arr={JsonConvert.SerializeObject(data)}";
                             var result_add = Common.Post(ConfigInfo.Apiurl_adddept, paramData);
@@ -922,7 +987,7 @@ namespace DSTool
                         dish_type_sync = false;
                         return;
                     }
-                    int addCount = 0, updateCoutnt = 0, failCount = 0;
+                    int addCount = 0, /*updateCoutnt = 0,*/ failCount = 0;
                     foreach (var item in getData)
                     {
                         var data = new O_dish_kind()
@@ -954,7 +1019,7 @@ namespace DSTool
                         addCount++;
                     }
                     SyncInfo.UpdateByTableName("dish_type");
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步成功,本次新增{addCount}条数据，失败{failCount}条\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步成功,本次新增{addCount}条数据,失败{failCount}条\r\n"));
 
                 }
                 catch (Exception ex)
@@ -989,12 +1054,12 @@ namespace DSTool
                         unit_sync = false;
                         return;
                     }
-                    if (getLastSyncInfo.IsSynced)
-                    {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位已经同步过了且只同步一次\r\n"));
-                        unit_sync = false;
-                        return;
-                    }
+                    //if (getLastSyncInfo.IsSynced)
+                    //{
+                    //    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位已经同步过了且只同步一次\r\n"));
+                    //    unit_sync = false;
+                    //    return;
+                    //}
                     var getData = DA_JLDW.GetList();
                     var getFailedData = SyncFailData.GetListByTableName("unit");
                     var now = DateTime.Now;
@@ -1005,6 +1070,7 @@ namespace DSTool
                         return;
                     }
                     bool flag = true;
+                    int addCount = 0/*, updateCount = 0, failCount = 0*/;
                     foreach (var item in getData)
                     {
                         var data = new O_dish_unit()
@@ -1017,13 +1083,15 @@ namespace DSTool
                         var result_add = Common.Post(ConfigInfo.Apiurl_addunit, paramData);
                         if (result_add == null || !result_add.Success)
                         {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位数据新增失败,原因:{result_add?.Msg}\r\n"));
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位数据更新失败,原因:{result_add?.Msg}\r\n"));
                             SyncFailData.InsertFailDate(new SyncFailData() { TableName = "unit", IdList = data.DuId.ToString(), FailType = 0, FailMessage = result_add?.Msg });
                             flag = flag && false;
+                            continue;
                         }
+                        addCount++;
                     }
                     SyncInfo.UpdateByTableName("unit", 1);
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"单位数据同步成功\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"单位数据同步成功,更新了{addCount}条数据\r\n"));
 
                 }
                 catch (Exception ex)
@@ -1245,7 +1313,7 @@ namespace DSTool
         {
             Task.Run(() =>
             {
-                if (dish_sync)
+                if (order_sync)
                 {
                     MessageBox.Show("对不起! 订单数据同步中,请勿重复点击!", "Tips");
                     return;
@@ -1270,10 +1338,11 @@ namespace DSTool
                         return;
                     }
 
-                    int addCount = 0, updateCount = 0, failCount = 0;
                     //同步以往失败的数据
                     if (getFailedData.Count > 0)
                     {
+                        var failDatas = new List<OrderInfo>();
+                        var idLists = new List<DeleteObject>();
                         foreach (var item in getFailedData)
                         {
                             var idList = item.IdList.Split(';');
@@ -1283,58 +1352,59 @@ namespace DSTool
                                 continue;
                             }
                             var failDataInfo = XS_PZ_ZB.GetById(idList[0]);
-                            var data = OrderInfo.GetData(failDataInfo, ConfigInfo.Dept_posid);
-
-                            var paramData = $"arr={JsonConvert.SerializeObject(data)}";
-                            var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={data.O_Order.SId}&day={DateTime.Now}&realtime=0", paramData);
-                            if (result_add == null || !result_add.Success)
+                            if (failDataInfo == null)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
-                                failCount++;
+                                SyncFailData.DeleteFailData("order", item.IdList);
                                 continue;
                             }
+                            var dataTemp = OrderInfo.GetData(failDataInfo, ConfigInfo.Dept_posid);
+                            failDatas.Add(dataTemp);
+                            idLists.Add(new DeleteObject() { TableName = "order", IdList = item.IdList });
+                        }
+
+                        var paramDataOld = $"arr={JsonConvert.SerializeObject(failDatas)}";
+                        var result_Old_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={failDatas[0].O_Order.SId}&day={DateTime.Now}&realtime=0", paramDataOld);
+                        if (result_Old_add == null || !result_Old_add.Success)
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据(历史失败的数据)新增失败(第{failDatas.Count + 1}条失败),原因:{result_Old_add?.Msg}\r\n"));
+                        }
+                        else
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据(历史失败的数据)同步成功新增{failDatas.Count + 1}条订单数据\r\n"));
+                            SyncFailData.DeleteFailDatas("order", idLists);
                         }
                     }
 
                     //同步数据
-                    foreach (var item in getData)
+                    if (getData.Count > 0)
                     {
-                        var data = OrderInfo.GetData(item, ConfigInfo.Dept_posid);
-
+                        var data = OrderInfo.GetListData(getData, ConfigInfo.Dept_posid);
                         var paramData = $"arr={JsonConvert.SerializeObject(data)}";
-                        var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={data.O_Order.SId}&day={DateTime.Now}&realtime=0", paramData);
+                        var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={data[0].O_Order.SId}&day={DateTime.Now}&realtime=0", paramData);
                         if (result_add == null || !result_add.Success)
                         {
-                            SyncFailData.InsertFailDate(new SyncFailData()
+                            var failDataList = new List<SyncFailData>();
+                            var date = DateTime.Now;
+                            foreach (var item in data)
                             {
-                                TableName = "order",
-                                IdList = item.JYH,
-                                FailType = 0,
-                                FailMessage = result_add?.Msg
-                            });
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
-                            failCount++;
-                            continue;
+                                failDataList.Add(new SyncFailData()
+                                {
+                                    TableName = "order",
+                                    IdList = item.O_Order.OId,
+                                    FailType = 0,
+                                    FailMessage = result_add?.Msg,
+                                    CreateTime = date
+                                });
+                            }
+                            SyncFailData.InsertFailDates(failDataList);
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据新增失败(共{data.Count + 1}条),原因:{result_add?.Msg}\r\n"));
                         }
-                        addCount++;
+                        else
+                        {
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据同步成功新增{data.Count + 1}条订单数据\r\n"));
+                        }
                     }
-
-                    var successMessage = $"订单数据同步成功";
-                    if (addCount > 0)
-                    {
-                        successMessage += $",新增了{addCount}条数据";
-                    }
-                    if (updateCount > 0)
-                    {
-                        successMessage += $",修改了{updateCount}";
-                    }
-                    if (failCount > 0)
-                    {
-                        successMessage += $",失败了{failCount}条数据";
-                    }
-
                     SyncInfo.UpdateByTableName("order");
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += successMessage + $".\r\n"));
                 }
                 catch (Exception ex)
                 {
@@ -1349,6 +1419,12 @@ namespace DSTool
 
         private void btn_OrderDetail_Click(object sender, EventArgs e)
         {
+            Task.Run(() =>
+            {
+                MessageBox.Show("Test");
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += "test"));
+            }
+            );
 
         }
 
@@ -1430,46 +1506,51 @@ namespace DSTool
         void InitData()
         {
             var brand_name = ConfigInfo.Brand_name;
-            var brand_status = ConfigInfo.Brand_status;
+            var brand_status = Convert.ToInt32(ConfigInfo.Brand_status);
             var brand_subject = ConfigInfo.Brand_subject;
             var brand_posid = ConfigInfo.Brand_posid;
             var brand_seq = ConfigInfo.Brand_seq;
 
             var area_name = ConfigInfo.Area_name;
-            var area_level = ConfigInfo.Area_level;
+            var area_level = Convert.ToInt32(ConfigInfo.Area_level);
             var area_faid = ConfigInfo.Area_faid;
             var area_seq = ConfigInfo.Area_seq;
-            var area_status = ConfigInfo.Area_status;
+            var area_status = Convert.ToInt32(ConfigInfo.Area_status);
             var area_subject = ConfigInfo.Area_subject;
             var area_posid = ConfigInfo.Area_posid;
 
             var dept_name = ConfigInfo.Dept_name;
             var dept_alias = ConfigInfo.Dept_alias;
-            var dept_status = ConfigInfo.Dept_status;
-            var dept_sequence = ConfigInfo.Dept_sequence;
+            var dept_status = Convert.ToInt32(ConfigInfo.Dept_status);
+            var dept_sequence = Convert.ToInt32(ConfigInfo.Dept_sequence);
             var dept_subject = ConfigInfo.Dept_subject;
             var dept_brand = ConfigInfo.Dept_brand;
+            var dept_sid = ConfigInfo.Dept_sid;
             var dept_posid = ConfigInfo.Dept_posid;
 
             bool brandFlag = false, areaFlag = false, deptFlag = false;
-            if (!string.IsNullOrEmpty(brand_name) && !string.IsNullOrEmpty(brand_status) && !string.IsNullOrEmpty(brand_subject) && !string.IsNullOrEmpty(brand_posid.ToString()) && !string.IsNullOrEmpty(brand_seq.ToString()))
+            if (!string.IsNullOrEmpty(brand_name) && !string.IsNullOrEmpty(ConfigInfo.Brand_status) && !string.IsNullOrEmpty(brand_subject) && !string.IsNullOrEmpty(brand_posid) && !string.IsNullOrEmpty(brand_seq.ToString()))
             {
                 brandFlag = true;
             }
-            if (!string.IsNullOrEmpty(area_name) && !string.IsNullOrEmpty(area_level) && !string.IsNullOrEmpty(area_status) && !string.IsNullOrEmpty(area_subject) && !string.IsNullOrEmpty(area_posid.ToString()))
+            if (!string.IsNullOrEmpty(area_name) && !string.IsNullOrEmpty(ConfigInfo.Area_level) && !string.IsNullOrEmpty(ConfigInfo.Area_status) && !string.IsNullOrEmpty(area_subject) && !string.IsNullOrEmpty(area_posid))
             {
                 areaFlag = true;
             }
-            if (!string.IsNullOrEmpty(dept_name) && !string.IsNullOrEmpty(dept_alias) && !string.IsNullOrEmpty(dept_status) && !string.IsNullOrEmpty(dept_sequence) && !string.IsNullOrEmpty(dept_subject) && !string.IsNullOrEmpty(dept_brand.ToString()) && !string.IsNullOrEmpty(dept_posid.ToString()))
+            if (!string.IsNullOrEmpty(dept_name) && !string.IsNullOrEmpty(dept_alias) && !string.IsNullOrEmpty(ConfigInfo.Dept_status) && !string.IsNullOrEmpty(ConfigInfo.Dept_sequence) && !string.IsNullOrEmpty(dept_subject) && !string.IsNullOrEmpty(dept_brand.ToString()) && !string.IsNullOrEmpty(dept_posid.ToString()))
             {
                 deptFlag = true;
             }
             if (brandFlag || areaFlag || deptFlag)
             {
                 #region Sql语句
-                var selectBrandSql = @"select top 1 brand_name,brand_status,brand_subject,brand_posid from brand_default where brand_name=@brand_name and brand_status=@brand_status and brand_subject=@brand_subject and brand_posid=@brand_posid";
+                var selectBrandSql = @"select top 1 brand_name,brand_status,brand_subject,brand_posid from brand_default where brand_posid=@brand_posid";
                 var insertBrandSql = @"insert into brand_default(brand_name,brand_status,brand_subject,brand_posid,brand_seq,createtime,lastupdatetime) values(@brand_name,@brand_status,@brand_subject,@brand_posid,@brand_seq,@createtime,@lastupdatetime)";
+                var updateBranSql = @"update brand_default set brand_name=@brand_name,brand_status=@brand_status,brand_subject=@brand_subject,brand_seq=@brand_seq,lastupdatetime=@lastupdatetime where brand_posid=@brand_posid";
                 var paramBrand = new DynamicParameters();
+                var paramBrandSelect = new DynamicParameters();
+                var paramBrandUpdate = new DynamicParameters();
+                paramBrandSelect.Add("brand_posid", brand_posid);
                 var dateTime = DateTime.Now;
                 paramBrand.Add("brand_name", brand_name);
                 paramBrand.Add("brand_status", brand_status);
@@ -1479,9 +1560,20 @@ namespace DSTool
                 paramBrand.Add("createtime", dateTime);
                 paramBrand.Add("lastupdatetime", dateTime);
 
-                var selectAreaSql = @"select top 1 area_name,area_level,area_faid,area_seq,area_status,area_subject,area_posid from area_default where area_name=@area_name and area_level=@area_level and area_status=@area_status and area_subject=@area_subject and area_posid=@area_posid";
+                paramBrandUpdate.Add("brand_name", brand_name);
+                paramBrandUpdate.Add("brand_status", brand_status);
+                paramBrandUpdate.Add("brand_subject", brand_subject);
+                paramBrandUpdate.Add("brand_posid", brand_posid);
+                paramBrandUpdate.Add("brand_seq", brand_seq);
+                paramBrandUpdate.Add("lastupdatetime", dateTime);
+
+                var selectAreaSql = @"select top 1 area_name,area_level,area_faid,area_seq,area_status,area_subject,area_posid from area_default where area_posid=@area_posid";
                 var insertAreaSql = @"insert into area_default(area_name,area_level,area_faid,area_seq,area_status,area_subject,area_posid,createtime,lastupdatetime) values(@area_name,@area_level,@area_faid,@area_seq,@area_status,@area_subject,@area_posid,@createtime,@lastupdatetime)";
+                var updateAreaSql = @"update area_default set area_name=@area_name,area_level=@area_level,area_faid=@area_faid,area_seq=@area_seq,area_status=@area_status,area_subject=@area_subject,lastupdatetime=@lastupdatetime where area_posid=@area_posid";
                 var paramArea = new DynamicParameters();
+                var paramAreaSelect = new DynamicParameters();
+                var paramAreaUpdate = new DynamicParameters();
+                paramAreaSelect.Add("area_posid", area_posid);
                 paramArea.Add("area_name", area_name);
                 paramArea.Add("area_level", area_level);
                 paramArea.Add("area_faid", area_faid);
@@ -1492,18 +1584,42 @@ namespace DSTool
                 paramArea.Add("createtime", dateTime);
                 paramArea.Add("lastupdatetime", dateTime);
 
-                var selectDeptSql = @"select top 1 dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_posid from dept_default where dept_name=@dept_name and dept_alias=@dept_alias and dept_status=@dept_status and dept_seq=@dept_seq and dept_sno=@dept_sno and dept_bid=@dept_bid and dept_posid=@dept_posid";
-                var insertDeptSql = @"insert into dept_default(dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_posid,createtime,lastupdatetime) values(@dept_name,@dept_alias,@dept_status,@dept_seq,@dept_sno,@dept_bid,@dept_posid,@createtime,@lastupdatetime)";
+                paramAreaUpdate.Add("area_name", area_name);
+                paramAreaUpdate.Add("area_level", area_level);
+                paramAreaUpdate.Add("area_faid", area_faid);
+                paramAreaUpdate.Add("area_seq", area_seq);
+                paramAreaUpdate.Add("area_status", area_status);
+                paramAreaUpdate.Add("area_subject", area_subject);
+                paramAreaUpdate.Add("area_posid", area_posid);
+                paramAreaUpdate.Add("lastupdatetime", dateTime);
+
+                var selectDeptSql = @"select top 1 dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_posid from dept_default where dept_posid=@dept_posid";
+                var insertDeptSql = @"insert into dept_default(dept_name,dept_alias,dept_status,dept_seq,dept_sno,dept_bid,dept_sid,dept_posid,createtime,lastupdatetime) values(@dept_name,@dept_alias,@dept_status,@dept_seq,@dept_sno,@dept_bid,@dept_sid,@dept_posid,@createtime,@lastupdatetime)";
+                var updateDeptSql = @"update dept_default set dept_name=@dept_name,dept_alias=@dept_alias,dept_status=@dept_status,dept_seq=@dept_seq,dept_sno=@dept_sno,dept_bid=@dept_bid,dept_sid=@dept_sid,lastupdatetime=@lastupdatetime where dept_posid=@dept_posid";
                 var paramDept = new DynamicParameters();
+                var paramDeptSelect = new DynamicParameters();
+                var paramDeptUpdate = new DynamicParameters();
+                paramDeptSelect.Add("dept_posid", dept_posid);
                 paramDept.Add("dept_name", dept_name);
                 paramDept.Add("dept_alias", dept_alias);
                 paramDept.Add("dept_status", dept_status);
                 paramDept.Add("dept_seq", dept_sequence);
                 paramDept.Add("dept_sno", dept_subject);
                 paramDept.Add("dept_bid", dept_brand);
+                paramDept.Add("dept_sid", dept_sid);
                 paramDept.Add("dept_posid", dept_posid);
                 paramDept.Add("createtime", dateTime);
                 paramDept.Add("lastupdatetime", dateTime);
+
+                paramDeptUpdate.Add("dept_name", dept_name);
+                paramDeptUpdate.Add("dept_alias", dept_alias);
+                paramDeptUpdate.Add("dept_status", dept_status);
+                paramDeptUpdate.Add("dept_seq", dept_sequence);
+                paramDeptUpdate.Add("dept_sno", dept_subject);
+                paramDeptUpdate.Add("dept_bid", dept_brand);
+                paramDeptUpdate.Add("dept_sid", dept_sid);
+                paramDeptUpdate.Add("dept_posid", dept_posid);
+                paramDeptUpdate.Add("lastupdatetime", dateTime);
 
                 var selectSyncInfoBrand = @"select tablename from syncinfo where tablename='brand_default'";
                 var selectSyncInfoArea = @"select tablename from syncinfo where tablename='area_default'";
@@ -1539,6 +1655,10 @@ namespace DSTool
                                 //品牌数据初始化完毕并允许同步品牌数据
                                 btn_Brand.Enabled = true;
                             }
+                            else if (brandInfo.Brand_name != brand_name || brandInfo.Brand_Seq != brand_seq || brandInfo.Brand_status != brand_status || brandInfo.Brand_subject != brand_subject)
+                            {
+                                db.Execute(updateBranSql, paramBrandUpdate);
+                            }
                         }
                         else
                         {
@@ -1554,6 +1674,10 @@ namespace DSTool
                                 //区域数据初始化完毕并允许同步区域数据
                                 btn_Area.Enabled = true;
                             }
+                            else if (areaInfo.Area_name != area_name || areaInfo.Area_level != area_level || areaInfo.Area_status != area_status || areaInfo.Area_Seq != area_seq || areaInfo.Area_faid != area_faid || areaInfo.Area_subject != area_subject)
+                            {
+                                db.Execute(updateAreaSql, paramAreaUpdate);
+                            }
                         }
                         else
                         {
@@ -1568,6 +1692,10 @@ namespace DSTool
                                 db.Execute(insertDeptSql, paramDept);
                                 //部门数据初始化完毕并允许同步部门数据
                                 btn_Dept.Enabled = true;
+                            }
+                            else if (deptInfo.Dept_name != dept_name || deptInfo.Dept_alias != dept_alias || deptInfo.Dept_bid != dept_brand || deptInfo.Dept_seq != dept_sequence || deptInfo.Dept_sid != dept_sid || deptInfo.Dept_sno != dept_subject || deptInfo.Dept_status != dept_status)
+                            {
+                                db.Execute(updateDeptSql, paramDeptUpdate);
                             }
                         }
                         else
@@ -1677,5 +1805,40 @@ namespace DSTool
 
         #endregion
 
+        private void MSTool_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                Hide();
+            }
+        }
+
+        private void display_Click(object sender, EventArgs e)
+        {
+            Show();
+            WindowState = FormWindowState.Normal;
+            Activate();
+        }
+
+        private void exit_Click(object sender, EventArgs e)
+        {
+
+            if (MessageBox.Show("确定要退出吗？", "Tips", MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            {
+                notifyIcon1.Visible = false;
+                Close();
+                Dispose();
+                Application.Exit();
+            }
+        }
+
+        private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                display_Click(null, null);
+            }
+        }
     }
 }

@@ -44,7 +44,7 @@ namespace DSTool.DbData
             var sql = @"select idlist from syncfaildata where tablename=@tablename";
             var param = new DynamicParameters();
             param.Add("tablename", tableName);
-            using (var db=new SqlConnection(ConfigInfo.ConnectionString))
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
             {
                 return db.Query<SyncFailData>(sql, param).ToList();
             }
@@ -60,22 +60,43 @@ namespace DSTool.DbData
             param.Add("failtype", data.FailType);
             param.Add("failmessage", data.FailMessage);
             param.Add("createtime", DateTime.Now);
-            using (var db=new SqlConnection(ConfigInfo.ConnectionString))
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
             {
                 return db.Execute(sql, param) > 0;
             }
         }
+        public static bool InsertFailDates(List<SyncFailData> data)
+        {
+            var sql = @"insert into syncfaildata(tablename,idlist,failtype,failmessage,createtime) values(@tablename,@idlist,@failtype,@failmessage,@createtime)";
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Execute(sql, data) > 0;
+            }
+        }
 
-        public static bool  DeleteFailData(string tableName,string idList)
+        public static bool DeleteFailData(string tableName, string idList)
         {
             var sql = @"delete from syncfaildata where tablename=@tablename and idlist=@idlist";
             var param = new DynamicParameters();
             param.Add("tablename", tableName);
             param.Add("idlist", idList);
-            using (var db=new SqlConnection(ConfigInfo.ConnectionString))
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
             {
                 return db.Execute(sql, param) > 0;
             }
         }
+        public static bool DeleteFailDatas(string tableName, List<DeleteObject> idLists)
+        {
+            var sql = @"delete from syncfaildata where tablename=@tablename and idlist=@idlist";
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return db.Execute(sql, idLists) > 0;
+            }
+        }
+    }
+    public class DeleteObject
+    {
+        public string TableName { get; set; }
+        public string IdList { get; set; }
     }
 }
