@@ -262,10 +262,8 @@ namespace DSTool.DbData
             var sql = @" SELECT JYH,CZRQ,CZSJ,FDNM,CZRQ_XS,CZSJ_XS,XSRQ,RS,ZTNM,XSJE,XSYH,
                                 MLJE,/*XJJE,CZKJE, YHQJE,QTJE,MDJE,QDJE,JE1,*/BCJE,RJRQ,BXJE,FJZBJTRUE,BZ,ZT 
                            FROM XS_PZ_ZB
-                          WHERE CZRQ>=@CZRQ
-                            AND CZSJ>=@CZSJ
-                            AND CZRQ_XS>=@CZRQ_XS
-                            AND CZSJ_XS>=@CZSJ_XS";
+                          WHERE (CZRQ>@CZRQ OR (CZRQ=@CZRQ AND CZSJ>=@CZSJ))
+                            AND (CZRQ_XS>=@CZRQ_XS OR (CZRQ_XS=@CZRQ_XS AND CZSJ_XS>=@CZSJ_XS))";
             var param = new DynamicParameters();
             param.Add("CZRQ", lastTime.ToString("yyyyMMdd"));
             param.Add("CZSJ", lastTime.ToString("HHmmss"));

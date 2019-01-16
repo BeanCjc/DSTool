@@ -16,6 +16,7 @@ using DSTool.RequestEntity;
 using System.Net.Http;
 using System.Net;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.Threading;
 using System.Data.SqlClient;
 using System.IO;
@@ -61,8 +62,9 @@ namespace DSTool
             watcher.Changed += (obj, fileSystemArgs) =>
             {
                 ConfigInfo = ConfigInfo.CreateInstance;
+                InitData();
 
-            };//监听配置文件
+            };//监听配置文件,刷新数据库默认数据(品牌,区域,部门)
 
             //1.检测是否可以访问智慧POS所在服务器和数据库
             //2.页面初始化需要创建三张表(品牌表,区域表,部门表),并填充默认数据到智慧POS数据库
@@ -241,7 +243,7 @@ namespace DSTool
               }, null, 1800000, 300000);
             timerRecordLog = new System.Threading.Timer(o =>
               {
-                  if (DateTime.Now.Hour == 18)
+                  if (DateTime.Now.Hour == 1)
                   {
                       //记录日志
                       Directory.CreateDirectory(currentDirectory + "\\Log");
@@ -254,14 +256,14 @@ namespace DSTool
                       if (File.Exists(fileName))
                       {
                           var content = "";
-                          rtxt_message.Invoke(new Action(() => content = rtxt_message.Text));
+                          rtxt_message.Invoke(new Action(() => content = rtxt_message.Text.Replace("\n", "\r\n")));
                           var sw = new StreamWriter(fileName, true, Encoding.UTF8);
                           sw.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "\r\n" + content);
                           sw.Close();
                       }
                       rtxt_message.Invoke(new Action(() => rtxt_message.Clear()));
                   }
-              }, null, 2000, 10000);
+              }, null, 1800000, 3600000);
             #endregion
         }
 
@@ -593,11 +595,6 @@ namespace DSTool
                             }
                             var itemData = DA_FD.GetById(Convert.ToInt32(idList[0]));
                             if (itemData == null)
-                            {
-                                SyncFailData.DeleteFailData("store", idList[0]);
-                                continue;
-                            }
-                            if (getLastSyncInfo.IdList.Contains(itemData.FDNM.ToString().Trim()) && getLastSyncInfo.LastUpdateTime > itemData.XGSJ)
                             {
                                 SyncFailData.DeleteFailData("store", idList[0]);
                                 continue;
@@ -1341,8 +1338,8 @@ namespace DSTool
                     //同步以往失败的数据
                     if (getFailedData.Count > 0)
                     {
-                        var failDatas = new List<OrderInfo>();
                         var idLists = new List<DeleteObject>();
+                        var failDataLists = new List<Abc>();
                         foreach (var item in getFailedData)
                         {
                             var idList = item.IdList.Split(';');
@@ -1358,52 +1355,78 @@ namespace DSTool
                                 continue;
                             }
                             var dataTemp = OrderInfo.GetData(failDataInfo, ConfigInfo.Dept_posid);
-                            failDatas.Add(dataTemp);
-                            idLists.Add(new DeleteObject() { TableName = "order", IdList = item.IdList });
-                        }
 
-                        var paramDataOld = $"arr={JsonConvert.SerializeObject(failDatas)}";
-                        var result_Old_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={failDatas[0].O_Order.SId}&day={DateTime.Now}&realtime=0", paramDataOld);
-                        if (result_Old_add == null || !result_Old_add.Success)
-                        {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据(历史失败的数据)新增失败(第{failDatas.Count + 1}条失败),原因:{result_Old_add?.Msg}\r\n"));
+                            var ddd = failDataLists.FirstOrDefault(t => t.Sid == failDataInfo.FDNM);
+                            if (ddd != null)
+                            {
+                                ddd.OrderInfos.Add(dataTemp);
+                                ddd.IdLists.Add(new DeleteObject() { TableName = "order", IdList = item.IdList });
+                            }
+                            else
+                            {
+                                failDataLists.Add(new Abc()
+                                {
+                                    Sid = failDataInfo.FDNM,
+                                    OrderInfos = new List<OrderInfo>() { dataTemp },
+                                    IdLists = new List<DeleteObject>() { new DeleteObject() { TableName = "order", IdList = item.IdList } }
+                                });
+                            }
                         }
-                        else
+                        foreach (var failDatas in failDataLists)
                         {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据(历史失败的数据)同步成功新增{failDatas.Count + 1}条订单数据\r\n"));
-                            SyncFailData.DeleteFailDatas("order", idLists);
+                            IsoDateTimeConverter timeConverter = new IsoDateTimeConverter();
+                            timeConverter.DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+                            var paramDataOld = $"arr={JsonConvert.SerializeObject(failDatas.OrderInfos, timeConverter)}";
+                            var result_Old_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={failDatas.Sid}&day={DateTime.Now.ToString("yyyy-MM-dd")}&realtime=0", paramDataOld);
+                            if (result_Old_add == null || !result_Old_add.Success)
+                            {
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据(门店id:{failDatas.Sid}(历史失败的数据))新增失败(共{failDatas.OrderInfos.Count}条失败),原因:{result_Old_add?.Msg}\r\n"));
+                            }
+                            else
+                            {
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据(门店id:{failDatas.Sid}(历史失败的数据))同步成功新增{failDatas.OrderInfos.Count}条订单数据\r\n"));
+                                SyncFailData.DeleteFailDatas("order", failDatas.IdLists);
+                            }
                         }
                     }
 
                     //同步数据
                     if (getData.Count > 0)
                     {
-                        var data = OrderInfo.GetListData(getData, ConfigInfo.Dept_posid);
-                        var paramData = $"arr={JsonConvert.SerializeObject(data)}";
-                        var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={data[0].O_Order.SId}&day={DateTime.Now}&realtime=0", paramData);
-                        if (result_add == null || !result_add.Success)
+                        var datas = OrderInfo.GetListData(getData, ConfigInfo.Dept_posid);
+                        foreach (var data in datas)
                         {
-                            var failDataList = new List<SyncFailData>();
-                            var date = DateTime.Now;
-                            foreach (var item in data)
+
+
+                            IsoDateTimeConverter timeConverter = new IsoDateTimeConverter();
+                            timeConverter.DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+                            var paramData = $"arr={JsonConvert.SerializeObject(data.OrderInfos, timeConverter)}";
+                            var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={data.Sid}&day={DateTime.Now.ToString("yyyy-MM-dd")}&realtime=0", paramData);
+                            if (result_add == null || !result_add.Success)
                             {
-                                failDataList.Add(new SyncFailData()
+                                var failDataList = new List<SyncFailData>();
+                                var date = DateTime.Now;
+                                foreach (var item in data.OrderInfos)
                                 {
-                                    TableName = "order",
-                                    IdList = item.O_Order.OId,
-                                    FailType = 0,
-                                    FailMessage = result_add?.Msg,
-                                    CreateTime = date
-                                });
+                                    failDataList.Add(new SyncFailData()
+                                    {
+                                        TableName = "order",
+                                        IdList = item.O_Order.OId,
+                                        FailType = 0,
+                                        FailMessage = result_add?.Msg,
+                                        CreateTime = date
+                                    });
+                                }
+                                SyncFailData.InsertFailDates(failDataList);
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据(门店id:{data.Sid})新增失败(共{data.OrderInfos.Count}条),原因:{result_add?.Msg}\r\n"));
                             }
-                            SyncFailData.InsertFailDates(failDataList);
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据新增失败(共{data.Count + 1}条),原因:{result_add?.Msg}\r\n"));
-                        }
-                        else
-                        {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据同步成功新增{data.Count + 1}条订单数据\r\n"));
+                            else
+                            {
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据(门店id:{data.Sid})同步成功新增{data.OrderInfos.Count}条订单数据\r\n"));
+                            }
                         }
                     }
+
                     SyncInfo.UpdateByTableName("order");
                 }
                 catch (Exception ex)

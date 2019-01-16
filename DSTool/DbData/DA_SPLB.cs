@@ -156,7 +156,7 @@ namespace DSTool.DbData
 
         public static DA_SPLB GetById(int id)
         {
-            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where SPLBNM=@SPLBNM";
+            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where SPLBNM=@SPLBNM and yclbj<>1";
             var param = new DynamicParameters();
             param.Add("SPLBNM", id);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))
@@ -167,7 +167,7 @@ namespace DSTool.DbData
 
         public static List<DA_SPLB> GetListByLastTime(string lastTime)
         {
-            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where XGRQ>=@lasttime";
+            var sql = @"select SPLBNM,SPLB,SSLBNM,QYBJ,SPLBDM from DA_SPLB where XGRQ>=@lasttime and yclbj<>1";
             var param = new DynamicParameters();
             param.Add("lasttime", lastTime);
             using (var db = new SqlConnection(ConfigInfo.ConnectionString))

@@ -19,6 +19,11 @@ namespace DSTool.RequestEntity
         /// </summary>
         public List<O_order_item_history> O_Order_Item { get; set; }
 
+        /// <summary>
+        /// 日结
+        /// </summary>
+        public int DayDone { get; set; } = 1;
+
         public static OrderInfo GetData(XS_PZ_ZB main, int deptId)
         {
             if (main == null || main.JYH?.Trim() == null /*|| !int.TryParse(main.JYH, out int oid)*/)
@@ -57,8 +62,8 @@ namespace DSTool.RequestEntity
                     People = main.RS,//必须字段
                     Total = main.XSJE,//必须字段
                     Cost = main.XSJE,//必须字段
-                    NewTime = Common.IntToDateTime(main.CZRQ + main.CZSJ),//必须字段
-                    CheckoutTime = Common.IntToDateTime(main.CZRQ_XS + main.CZSJ_XS),//必须字段
+                    NewTime = Common.IntToDateTime(main.CZRQ, main.CZSJ),//必须字段
+                    CheckoutTime = Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS),//必须字段
                     OrderType = "1",//必须字段
                     SId = sid//必须字段
                              //可选字段
@@ -68,9 +73,15 @@ namespace DSTool.RequestEntity
             };
         }
 
-        public static List<OrderInfo> GetListData(List<XS_PZ_ZB> mains, int deptId)
+        /// <summary>
+        /// 按门店进行分类集合
+        /// </summary>
+        /// <param name="mains"></param>
+        /// <param name="deptId"></param>
+        /// <returns></returns>
+        public static List<Abc> GetListData(List<XS_PZ_ZB> mains, int deptId)
         {
-            var result = new List<OrderInfo>();
+            var result = new List<Abc>();
             foreach (var main in mains)
             {
                 var orderItemList = XS_PZ.GetListByOrderId(main.JYH.Trim());
@@ -96,26 +107,64 @@ namespace DSTool.RequestEntity
 
                     });
                 }
-                result.Add(new OrderInfo()
+                var ddd = result.FirstOrDefault(t => t.Sid == sid);
+                if (ddd != null)
                 {
-                    O_Order = new O_order_history()
+                    ddd.OrderInfos.Add(new OrderInfo()
                     {
-                        OId = main.JYH.Trim(),//必须字段
-                        OrderStatus = 3,//必须字段
-                        People = main.RS,//必须字段
-                        Total = main.XSJE,//必须字段
-                        Cost = main.XSJE,//必须字段
-                        NewTime = Common.IntToDateTime(main.CZRQ + main.CZSJ),//必须字段
-                        CheckoutTime = Common.IntToDateTime(main.CZRQ_XS + main.CZSJ_XS),//必须字段
-                        OrderType = "1",//必须字段
-                        SId = sid//必须字段
-                                 //可选字段
+                        O_Order = new O_order_history()
+                        {
+                            OId = main.JYH.Trim(),//必须字段
+                            OrderStatus = 3,//必须字段
+                            People = main.RS,//必须字段
+                            Total = main.XSJE,//必须字段
+                            Cost = main.XSJE,//必须字段
+                            NewTime = Common.IntToDateTime(main.CZRQ, main.CZSJ),//必须字段
+                            CheckoutTime = Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS),//必须字段
+                            OrderType = "1",//必须字段
+                            SId = sid//必须字段
+                                     //可选字段
 
-                    },
-                    O_Order_Item = orderItem
-                });
+                        },
+                        O_Order_Item = orderItem
+                    });
+                }
+                else
+                {
+                    result.Add(new Abc()
+                    {
+                        Sid = sid,
+                        OrderInfos = new List<OrderInfo>()
+                        {
+                            new OrderInfo()
+                            {
+                                O_Order = new O_order_history()
+                                {
+                                    OId = main.JYH.Trim(),//必须字段
+                                    OrderStatus = 3,//必须字段
+                                    People = main.RS,//必须字段
+                                    Total = main.XSJE,//必须字段
+                                    Cost = main.XSJE,//必须字段
+                                    NewTime = Common.IntToDateTime(main.CZRQ, main.CZSJ),//必须字段
+                                    CheckoutTime = Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS),//必须字段
+                                    OrderType = "1",//必须字段
+                                    SId = sid//必须字段
+                                             //可选字段
+
+                                },
+                                O_Order_Item = orderItem
+                            }
+                        }
+                    });
+                }
             }
             return result;
         }
+    }
+    class Abc
+    {
+        public List<OrderInfo> OrderInfos { get; set; }
+        public int Sid { get; set; }
+        public List<DeleteObject> IdLists { get; set; }
     }
 }
