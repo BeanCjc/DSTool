@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using DSTool.DbData;
 using System.Configuration;
-using MySql.Data.MySqlClient;
 using Dapper;
 using System.IO;
 using DSTool.RequestEntity;
@@ -108,12 +107,8 @@ namespace DSTool
 	                                            [brand_utime] [datetime] NULL,
 	                                            [brand_memo] [varchar](50) NULL,
 	                                            [createtime] [datetime] NULL,
-	                                            [lastupdatetime] [datetime] NULL,
-                                             CONSTRAINT [PK_brand_default] PRIMARY KEY CLUSTERED 
-                                            (
-	                                            [brand_posid] ASC
-                                            )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
-                                            ) ON [PRIMARY];
+	                                            [lastupdatetime] [datetime] NULL) ;
+                                            ALTER TABLE [dbo].[brand_default] ADD  CONSTRAINT [PK_brand_default] PRIMARY KEY(brand_posid) 
                                             ALTER TABLE [dbo].[brand_default] ADD  CONSTRAINT [DF_brand_default_brand_utime]  DEFAULT (getdate()) FOR [brand_utime];
                                             ALTER TABLE [dbo].[brand_default] ADD  CONSTRAINT [DF_brand_default_createtime]  DEFAULT (getdate()) FOR [createtime];
                                             ALTER TABLE [dbo].[brand_default] ADD  CONSTRAINT [DF_brand_default_lastupdatetime]  DEFAULT (getdate()) FOR [lastupdatetime];";
@@ -129,12 +124,8 @@ namespace DSTool
 	                                            [area_subject] [varchar](50) NOT NULL,
 	                                            [area_posid] [varchar](50) NOT NULL,
 	                                            [createtime] [datetime] NULL,
-	                                            [lastupdatetime] [datetime] NULL,
-                                             CONSTRAINT [PK_area_default] PRIMARY KEY CLUSTERED 
-                                            (
-	                                            [area_posid] ASC
-                                            )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
-                                            ) ON [PRIMARY];
+	                                            [lastupdatetime] [datetime] NULL) ;
+                                            ALTER TABLE [dbo].[area_default] ADD CONSTRAINT [PK_area_default] PRIMARY KEY(area_posid);
                                             ALTER TABLE [dbo].[area_default] ADD  CONSTRAINT [DF_area_default_area_level]  DEFAULT ((1)) FOR [area_level];
                                             ALTER TABLE [dbo].[area_default] ADD  CONSTRAINT [DF_area_default_area_faid]  DEFAULT ((-1)) FOR [area_faid];
                                             ALTER TABLE [dbo].[area_default] ADD  CONSTRAINT [DF_area_default_createtime]  DEFAULT (getdate()) FOR [createtime];
@@ -151,12 +142,8 @@ namespace DSTool
 	                                            [dept_sid] [varchar](50) NULL,
 	                                            [dept_posid] [varchar](50) NOT NULL,
 	                                            [createtime] [datetime] NULL,
-	                                            [lastupdatetime] [datetime] NULL,
-                                             CONSTRAINT [PK_dept_default] PRIMARY KEY CLUSTERED 
-                                            (
-	                                            [dept_posid] ASC
-                                            )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
-                                            ) ON [PRIMARY];
+	                                            [lastupdatetime] [datetime] NULL);
+                                            ALTER TABLE [dbo].[dept_default] ADD CONSTRAINT [PK_dept_default] PRIMARY KEY(dept_posid);
                                             ALTER TABLE [dbo].[dept_default] ADD  CONSTRAINT [DF_dept_default_createtime]  DEFAULT (getdate()) FOR [createtime];
                                             ALTER TABLE [dbo].[dept_default] ADD  CONSTRAINT [DF_dept_default_lastupdatetime]  DEFAULT (getdate()) FOR [lastupdatetime];";
 
@@ -165,12 +152,8 @@ namespace DSTool
 	                                    [tablename] [varchar](50) NOT NULL,
 	                                    [lastupdatetime] [datetime] NOT NULL,
 	                                    [issynced] [bit] NOT NULL,
-                                        [idlist] [varchar](8000) NOT NULL,
-                                     CONSTRAINT [PK_syncinfo] PRIMARY KEY CLUSTERED 
-                                    (
-	                                    [tablename] ASC
-                                    )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
-                                    ) ON [PRIMARY];
+                                        [idlist] [varchar](8000) NOT NULL);
+                                    ALTER TABLE [dbo].[syncinfo] ADD  CONSTRAINT [PK_syncinfo] PRIMARY KEY(tablename);
                                     ALTER TABLE [dbo].[syncinfo] ADD  CONSTRAINT [DF_syncinfo_lastupdatetime]  DEFAULT ('1900-1-1 00:00:00') FOR [lastupdatetime];
                                     ALTER TABLE [dbo].[syncinfo] ADD  CONSTRAINT [DF_syncinfo_issynced]  DEFAULT ((0)) FOR [issynced];
                                     ALTER TABLE [dbo].[syncinfo] ADD  CONSTRAINT [DF_syncinfo_idlist]  DEFAULT ('') FOR [idlist];";
@@ -181,8 +164,7 @@ namespace DSTool
 	                                        [idlist] [varchar](500) NOT NULL,
 	                                        [failtype] [int] NOT NULL,
 	                                        [failmessage] [varchar](500) NULL,
-	                                        [createtime] [datetime] NOT NULL
-                                        ) ON [PRIMARY];
+	                                        [createtime] [datetime] NOT NULL);
                                         ALTER TABLE [dbo].[syncfaildata] ADD  CONSTRAINT [DF_syncfaildata_failtype]  DEFAULT ((0)) FOR [failtype];
                                         ALTER TABLE [dbo].[syncfaildata] ADD  CONSTRAINT [DF_syncfaildata_createdatiem]  DEFAULT (getdate()) FOR [createtime];";
             #endregion
@@ -235,12 +217,12 @@ namespace DSTool
                        btn_Unit_Click(null, null);
                        btn_Dish_Click(null, null);
                    }
-               }, null, 1800000, 1800000);
+               }, null, 300000, 1800000);
 
             timerOrder = new System.Threading.Timer(o =>
               {
                   btn_OrderMain_Click(null, null);
-              }, null, 1800000, 300000);
+              }, null, 60000, 60000);
             timerRecordLog = new System.Threading.Timer(o =>
               {
                   if (DateTime.Now.Hour == 1)
@@ -283,7 +265,7 @@ namespace DSTool
                 }
 
                 brand_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品牌数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("brand_default");
@@ -298,7 +280,7 @@ namespace DSTool
                     //获取待同步的数据,包含新增和修改,不含删除,以及之前同步失败的数据
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品牌无数据同步\r\n"));
                         brand_sync = false;
                         return;
                     }
@@ -335,7 +317,7 @@ namespace DSTool
                                 var result_add = Common.Post(ConfigInfo.Apiurl_addbrand, paramData);
                                 if (result_add == null || !result_add.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品牌数据新增失败,原因:{result_add?.Msg}\r\n"));
                                 }
                                 else
                                 {
@@ -348,7 +330,7 @@ namespace DSTool
                                 var result_update = Common.Post(ConfigInfo.Apiurl_editbrand, paramData_update);
                                 if (result_update == null || !result_update.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品牌数据修改失败,原因:{result_update?.Msg}\r\n"));
                                 }
                                 else
                                 {
@@ -374,7 +356,7 @@ namespace DSTool
                             var result_add = Common.Post(ConfigInfo.Apiurl_addbrand, paramData);
                             if (result_add == null || !result_add.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品牌数据新增失败,原因:{result_add?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData() { TableName = "brand_default", IdList = data.CbId.ToString(), FailType = 0, FailMessage = result_add?.Msg });
                                 flag = flag && false;
                             }
@@ -385,7 +367,7 @@ namespace DSTool
                             var result_update = Common.Post(ConfigInfo.Apiurl_editbrand, paramData_update);
                             if (result_update == null || !result_update.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品牌数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品牌数据修改失败,原因:{result_update?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData() { TableName = "brand_default", IdList = data.CbId.ToString(), FailType = 0, FailMessage = result_update?.Msg });
                                 flag = flag && false;
                             }
@@ -395,14 +377,14 @@ namespace DSTool
                     if (flag)
                     {
                         SyncInfo.UpdateByTableName("brand_default");
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品牌数据同步成功\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品牌数据同步成功\r\n"));
                     }
 
 
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInBrand:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInBrand:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -422,7 +404,7 @@ namespace DSTool
                     return;
                 }
                 area_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"区域数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n区域数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("area_default");
@@ -436,7 +418,7 @@ namespace DSTool
                     var getFailedData = SyncFailData.GetListByTableName("area_default");
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"区域无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n区域无数据同步\r\n"));
                         area_sync = false;
                         return;
                     }
@@ -474,7 +456,7 @@ namespace DSTool
                                 var result_add = Common.Post(ConfigInfo.Apiurl_addarea, paramData);
                                 if (result_add == null || !result_add.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 区域数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 区域数据新增失败,原因:{result_add?.Msg}\r\n"));
                                 }
                                 else
                                 {
@@ -487,7 +469,7 @@ namespace DSTool
                                 var result_update = Common.Post(ConfigInfo.Apiurl_editarea, paramData_update);
                                 if (result_update == null || !result_update.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 区域数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 区域数据修改失败,原因:{result_update?.Msg}\r\n"));
                                 }
                                 else
                                 {
@@ -516,7 +498,7 @@ namespace DSTool
                             var result_add = Common.Post(ConfigInfo.Apiurl_addarea, paramData);
                             if (result_add == null || !result_add.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 区域数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 区域数据新增失败,原因:{result_add?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData() { TableName = "area_default", IdList = data.CaId.ToString(), FailType = 0, FailMessage = result_add?.Msg });
                                 flag = flag && false;
                             }
@@ -527,7 +509,7 @@ namespace DSTool
                             var result_update = Common.Post(ConfigInfo.Apiurl_editarea, paramData_update);
                             if (result_update == null || !result_update.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 区域数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 区域数据修改失败,原因:{result_update?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData() { TableName = "area_default", IdList = data.CaId.ToString(), FailType = 0, FailMessage = result_update?.Msg });
                                 flag = flag && false;
                             }
@@ -537,12 +519,12 @@ namespace DSTool
                     if (flag)
                     {
                         SyncInfo.UpdateByTableName("area_default");
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"区域数据同步成功\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n区域数据同步成功\r\n"));
                     }
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInArea:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInArea:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -562,7 +544,7 @@ namespace DSTool
                     return;
                 }
                 store_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"门店数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n门店数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("store");
@@ -577,7 +559,7 @@ namespace DSTool
                     var idListForAdd = getLastSyncInfo.IdList?.Trim() ?? "";
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"门店无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n门店无数据同步\r\n"));
                         store_sync = false;
                         return;
                     }
@@ -618,7 +600,7 @@ namespace DSTool
                                 var result_update = Common.Post(ConfigInfo.Apiurl_editstore, paramData);
                                 if (result_update == null || !result_update.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 门店数据(storeid:{itemData.FDNM})修改失败,原因:{result_update?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 门店数据(storeid:{itemData.FDNM})修改失败,原因:{result_update?.Msg}\r\n"));
                                     failCount++;
                                     continue;
                                 }
@@ -629,7 +611,7 @@ namespace DSTool
                                 var result_add = Common.Post(ConfigInfo.Apiurl_addstore, paramData);
                                 if (result_add == null || !result_add.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 门店数据(storeid:{itemData.FDNM})新增失败,原因:{result_add?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 门店数据(storeid:{itemData.FDNM})新增失败,原因:{result_add?.Msg}\r\n"));
                                     failCount++;
                                     continue;
                                 }
@@ -672,7 +654,7 @@ namespace DSTool
                             var result_update = Common.Post(ConfigInfo.Apiurl_editstore, paramData);
                             if (result_update == null || !result_update.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 门店数据(storeid:{item.FDNM})修改失败,原因:{result_update?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 门店数据(storeid:{item.FDNM})修改失败,原因:{result_update?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData()
                                 {
                                     TableName = "store",
@@ -690,7 +672,7 @@ namespace DSTool
                             var result_add = Common.Post(ConfigInfo.Apiurl_addstore, paramData);
                             if (result_add == null || !result_add.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 门店数据(storeid:{item.FDNM})新增失败,原因:{result_add?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 门店数据(storeid:{item.FDNM})新增失败,原因:{result_add?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData()
                                 {
                                     TableName = "store",
@@ -715,13 +697,13 @@ namespace DSTool
 
                     if (addCount == 0 && updateCount == 0 && failCount == 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"门店无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n门店无数据同步\r\n"));
                         store_sync = false;
                         return;
                     }
                     else
                     {
-                        var successMessage = $"门店数据同步成功";
+                        var successMessage = $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n门店数据同步成功";
                         if (addCount > 0)
                         {
                             successMessage += $",新增了{addCount}条数据";
@@ -740,7 +722,7 @@ namespace DSTool
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInStore:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInStore:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -760,7 +742,7 @@ namespace DSTool
                     return;
                 }
                 meal_time_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n餐段数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("meal_time");
@@ -772,7 +754,7 @@ namespace DSTool
                     }
                     if (getLastSyncInfo.IsSynced)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 餐段已经同步过了且只同步一次\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 餐段已经同步过了且只同步一次\r\n"));
                         meal_time_sync = false;
                         return;
                     }
@@ -793,17 +775,17 @@ namespace DSTool
                     var result_add = Common.Post(ConfigInfo.Apiurl_addmealtime, paramData);
                     if (result_add == null || !result_add.Success)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 餐段数据新增失败,原因:{result_add?.Msg}\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 餐段数据新增失败,原因:{result_add?.Msg}\r\n"));
                     }
                     else
                     {
                         SyncInfo.UpdateByTableName("meal_time", 1);
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"餐段数据同步成功,新增了一条数据\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n餐段数据同步成功,新增了1条数据\r\n"));
                     }
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInMeal_Time:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInMeal_Time:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -823,7 +805,7 @@ namespace DSTool
                     return;
                 }
                 dept_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"部门数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n部门数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("dept_default");
@@ -836,7 +818,7 @@ namespace DSTool
                     var getFailedData = SyncFailData.GetListByTableName("dept_default");
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"部门无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n部门无数据同步\r\n"));
                         dept_sync = false;
                         return;
                     }
@@ -874,7 +856,7 @@ namespace DSTool
                                 var result_add = Common.Post(ConfigInfo.Apiurl_adddept, paramData);
                                 if (result_add == null || !result_add.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 部门数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 部门数据新增失败,原因:{result_add?.Msg}\r\n"));
                                 }
                                 else
                                 {
@@ -887,7 +869,7 @@ namespace DSTool
                                 var result_update = Common.Post(ConfigInfo.Apiurl_editdept, paramData_update);
                                 if (result_update == null || !result_update.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 部门数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 部门数据修改失败,原因:{result_update?.Msg}\r\n"));
                                 }
                                 else
                                 {
@@ -918,7 +900,7 @@ namespace DSTool
                             var result_add = Common.Post(ConfigInfo.Apiurl_adddept, paramData);
                             if (result_add == null || !result_add.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 部门数据新增失败,原因:{result_add?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 部门数据新增失败,原因:{result_add?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData() { TableName = "dept_default", IdList = data.CdmId.ToString(), FailType = 0, FailMessage = result_add?.Msg });
                                 flag = flag && false;
                             }
@@ -929,7 +911,7 @@ namespace DSTool
                             var result_update = Common.Post(ConfigInfo.Apiurl_editdept, paramData_update);
                             if (result_update == null || !result_update.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 部门数据修改失败,原因:{result_update?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 部门数据修改失败,原因:{result_update?.Msg}\r\n"));
                                 SyncFailData.InsertFailDate(new SyncFailData() { TableName = "dept_default", IdList = data.CdmId.ToString(), FailType = 0, FailMessage = result_update?.Msg });
                                 flag = flag && false;
                             }
@@ -939,13 +921,13 @@ namespace DSTool
                     if (flag)
                     {
                         SyncInfo.UpdateByTableName("dept_default");
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"部门数据同步成功\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n部门数据同步成功\r\n"));
                     }
 
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInDept:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInDept:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -965,7 +947,7 @@ namespace DSTool
                     return;
                 }
                 dish_type_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品项类型数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("dish_type");
@@ -980,7 +962,7 @@ namespace DSTool
                     var now = DateTime.Now;
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品项类型无数据同步\r\n"));
                         dish_type_sync = false;
                         return;
                     }
@@ -1010,18 +992,18 @@ namespace DSTool
                         if (result_add == null || !result_add.Success)
                         {
                             failCount++;
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项类型数据新增失败(第{failCount}条),原因:{result_add?.Msg}\r\n"));
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品项类型数据新增失败(第{failCount}条),原因:{result_add?.Msg}\r\n"));
                             continue;
                         }
                         addCount++;
                     }
                     SyncInfo.UpdateByTableName("dish_type");
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项类型数据同步成功,本次新增{addCount}条数据,失败{failCount}条\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品项类型数据同步成功,本次新增{addCount}条数据,失败{failCount}条\r\n"));
 
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInDish_Type:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInDish_Type:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -1041,7 +1023,7 @@ namespace DSTool
                     return;
                 }
                 unit_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"单位数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n单位数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("unit");
@@ -1062,7 +1044,7 @@ namespace DSTool
                     var now = DateTime.Now;
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 单位无数据同步\r\n"));
                         unit_sync = false;
                         return;
                     }
@@ -1080,7 +1062,7 @@ namespace DSTool
                         var result_add = Common.Post(ConfigInfo.Apiurl_addunit, paramData);
                         if (result_add == null || !result_add.Success)
                         {
-                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 单位数据更新失败,原因:{result_add?.Msg}\r\n"));
+                            rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 单位数据更新失败,原因:{result_add?.Msg}\r\n"));
                             SyncFailData.InsertFailDate(new SyncFailData() { TableName = "unit", IdList = data.DuId.ToString(), FailType = 0, FailMessage = result_add?.Msg });
                             flag = flag && false;
                             continue;
@@ -1088,12 +1070,12 @@ namespace DSTool
                         addCount++;
                     }
                     SyncInfo.UpdateByTableName("unit", 1);
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"单位数据同步成功,更新了{addCount}条数据\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n单位数据同步成功,更新了{addCount}条数据\r\n"));
 
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInUnit:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInUnit:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -1113,7 +1095,7 @@ namespace DSTool
                     return;
                 }
                 dish_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品项数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("dish");
@@ -1127,7 +1109,7 @@ namespace DSTool
                     var getData = DA_SP.GetListByLastTime(getLastSyncInfo.LastUpdateTime);
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"品项无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品项无数据同步\r\n"));
                         dish_sync = false;
                         return;
                     }
@@ -1180,7 +1162,7 @@ namespace DSTool
                                 var result_add = Common.Post(ConfigInfo.Apiurl_adddish, paramData);
                                 if (result_add == null || !result_add.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品项数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
                                     failCount++;
                                     continue;
                                 }
@@ -1196,7 +1178,7 @@ namespace DSTool
                                 var result_update = Common.Post(ConfigInfo.Apiurl_editdish, paramData_update);
                                 if (result_update == null || !result_update.Success)
                                 {
-                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据修改失败(第{failCount + 1}条失败),原因:{result_update?.Msg}\r\n"));
+                                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品项数据修改失败(第{failCount + 1}条失败),原因:{result_update?.Msg}\r\n"));
                                     failCount++;
                                     continue;
                                 }
@@ -1250,7 +1232,7 @@ namespace DSTool
                                     FailType = 1,
                                     FailMessage = result_update?.Msg
                                 });
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据修改失败(第{failCount + 1}条失败),原因:{result_update?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品项数据修改失败(第{failCount + 1}条失败),原因:{result_update?.Msg}\r\n"));
                                 failCount++;
                                 continue;
                             }
@@ -1269,7 +1251,7 @@ namespace DSTool
                                     FailType = 0,
                                     FailMessage = result_add?.Msg
                                 });
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 品项数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 品项数据新增失败(第{failCount + 1}条失败),原因:{result_add?.Msg}\r\n"));
                                 failCount++;
                                 continue;
                             }
@@ -1277,7 +1259,7 @@ namespace DSTool
                         }
                     }
 
-                    var successMessage = $"品项数据同步成功";
+                    var successMessage = $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n品项数据同步成功";
                     if (addCount > 0)
                     {
                         successMessage += $",新增了{addCount}条数据";
@@ -1296,7 +1278,7 @@ namespace DSTool
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInDish:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInDish:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -1316,7 +1298,7 @@ namespace DSTool
                     return;
                 }
                 order_sync = true;
-                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据同步中,请耐心等待......\r\n"));
+                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n订单数据同步中,请耐心等待......\r\n"));
                 try
                 {
                     var getLastSyncInfo = SyncInfo.GetInfoByTableName("order");
@@ -1330,7 +1312,7 @@ namespace DSTool
                     var getData = XS_PZ_ZB.GetListByLastTime(getLastSyncInfo.LastUpdateTime);
                     if (getFailedData.Count <= 0 && getData.Count <= 0)
                     {
-                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单无数据同步\r\n"));
+                        rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n订单无数据同步\r\n"));
                         order_sync = false;
                         return;
                     }
@@ -1339,7 +1321,7 @@ namespace DSTool
                     if (getFailedData.Count > 0)
                     {
                         var idLists = new List<DeleteObject>();
-                        var failDataLists = new List<Abc>();
+                        var failDataLists = new List<OrderInfoList>();
                         foreach (var item in getFailedData)
                         {
                             var idList = item.IdList.Split(';');
@@ -1364,9 +1346,10 @@ namespace DSTool
                             }
                             else
                             {
-                                failDataLists.Add(new Abc()
+                                failDataLists.Add(new OrderInfoList()
                                 {
                                     Sid = failDataInfo.FDNM,
+                                    Date = Common.IntToDateTime(failDataInfo.CZRQ_XS, failDataInfo.CZSJ_XS).ToString("yyyy-MM-dd"),
                                     OrderInfos = new List<OrderInfo>() { dataTemp },
                                     IdLists = new List<DeleteObject>() { new DeleteObject() { TableName = "order", IdList = item.IdList } }
                                 });
@@ -1377,14 +1360,14 @@ namespace DSTool
                             IsoDateTimeConverter timeConverter = new IsoDateTimeConverter();
                             timeConverter.DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
                             var paramDataOld = $"arr={JsonConvert.SerializeObject(failDatas.OrderInfos, timeConverter)}";
-                            var result_Old_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={failDatas.Sid}&day={DateTime.Now.ToString("yyyy-MM-dd")}&realtime=0", paramDataOld);
+                            var result_Old_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={failDatas.Sid}&day={failDatas.Date}", paramDataOld);
                             if (result_Old_add == null || !result_Old_add.Success)
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据(门店id:{failDatas.Sid}(历史失败的数据))新增失败(共{failDatas.OrderInfos.Count}条失败),原因:{result_Old_add?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 订单数据(门店id:{failDatas.Sid} 日期:{failDatas.Date}(历史失败的数据))新增失败(共{failDatas.OrderInfos.Count}条失败),原因:{result_Old_add?.Msg}\r\n"));
                             }
                             else
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据(门店id:{failDatas.Sid}(历史失败的数据))同步成功新增{failDatas.OrderInfos.Count}条订单数据\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n订单数据(门店id:{failDatas.Sid} 日期:{failDatas.Date}(历史失败的数据))同步成功新增{failDatas.OrderInfos.Count}条订单数据\r\n"));
                                 SyncFailData.DeleteFailDatas("order", failDatas.IdLists);
                             }
                         }
@@ -1401,7 +1384,7 @@ namespace DSTool
                             IsoDateTimeConverter timeConverter = new IsoDateTimeConverter();
                             timeConverter.DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
                             var paramData = $"arr={JsonConvert.SerializeObject(data.OrderInfos, timeConverter)}";
-                            var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={data.Sid}&day={DateTime.Now.ToString("yyyy-MM-dd")}&realtime=0", paramData);
+                            var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={data.Sid}&day={data.Date}", paramData);
                             if (result_add == null || !result_add.Success)
                             {
                                 var failDataList = new List<SyncFailData>();
@@ -1418,20 +1401,20 @@ namespace DSTool
                                     });
                                 }
                                 SyncFailData.InsertFailDates(failDataList);
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"对不起! 订单数据(门店id:{data.Sid})新增失败(共{data.OrderInfos.Count}条),原因:{result_add?.Msg}\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n对不起! 订单数据(门店id:{data.Sid} 日期:{data.Date})新增失败(共{data.OrderInfos.Count}条),原因:{result_add?.Msg}\r\n"));
                             }
                             else
                             {
-                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"订单数据(门店id:{data.Sid})同步成功新增{data.OrderInfos.Count}条订单数据\r\n"));
+                                rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\n订单数据(门店id:{data.Sid} 日期:{data.Date})同步成功新增{data.OrderInfos.Count}条订单数据\r\n"));
                             }
                         }
+                        SyncInfo.UpdateByTableName("order");
                     }
 
-                    SyncInfo.UpdateByTableName("order");
                 }
                 catch (Exception ex)
                 {
-                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"ExceptionInfoInOrder:{ex.Message}\r\n"));
+                    rtxt_message.Invoke(new Action(() => rtxt_message.Text += $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff")}\r\nExceptionInfoInOrder:{ex.Message}\r\n"));
                 }
                 finally
                 {
@@ -1653,15 +1636,17 @@ namespace DSTool
                 var selectSyncInfoDish = @"select tablename from syncinfo where tablename='dish'";
                 var selectSyncInfoMeal_time = @"select tablename from syncinfo where tablename='meal_time'";
                 var selectSyncInfoOrder = @"select tablename from syncinfo where tablename='order'";
-                var insertSyncInfoBrand = @"insert into syncinfo(tablename) values('brand_default');";
-                var insertSyncInfoArea = @"insert into syncinfo(tablename) values('area_default');";
-                var insertSyncInfoDept = @"insert into syncinfo(tablename) values('dept_default');";
-                var insertSyncInfoMeal_time = @"insert into syncinfo(tablename) values('meal_time');";
-                var insertSyncInfoDish_type = @"insert into syncinfo(tablename) values('dish_type');";
-                var insertSyncInfoStore = @"insert into syncinfo(tablename) values('store');";
-                var insertSyncInfoDish = @"insert into syncinfo(tablename) values('dish');";
-                var insertSyncInfoUnit = @"insert into syncinfo(tablename) values('unit');";
-                var insertSyncInfoOrder = @"insert into syncinfo(tablename) values('order');";
+                var insertSyncInfoBrand = @"insert into syncinfo(tablename,lastupdatetime) values('brand_default',@lastupdatetime);";
+                var insertSyncInfoArea = @"insert into syncinfo(tablename,lastupdatetime) values('area_default',@lastupdatetime);";
+                var insertSyncInfoDept = @"insert into syncinfo(tablename,lastupdatetime) values('dept_default',@lastupdatetime);";
+                var insertSyncInfoMeal_time = @"insert into syncinfo(tablename,lastupdatetime) values('meal_time',@lastupdatetime);";
+                var insertSyncInfoDish_type = @"insert into syncinfo(tablename,lastupdatetime) values('dish_type',@lastupdatetime);";
+                var insertSyncInfoStore = @"insert into syncinfo(tablename,lastupdatetime) values('store',@lastupdatetime);";
+                var insertSyncInfoDish = @"insert into syncinfo(tablename,lastupdatetime) values('dish',@lastupdatetime);";
+                var insertSyncInfoUnit = @"insert into syncinfo(tablename,lastupdatetime) values('unit',@lastupdatetime);";
+                var insertSyncInfoOrder = @"insert into syncinfo(tablename,lastupdatetime) values('order',@lastupdatetime);";
+                var paramDateTime = new DynamicParameters();
+                paramDateTime.Add("lastupdatetime", ConfigInfo.StartTime);
                 #endregion
 
                 try
@@ -1729,39 +1714,39 @@ namespace DSTool
                         #region 插入基本信息
                         if (db.ExecuteScalar(selectSyncInfoBrand)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoBrand);
+                            db.Execute(insertSyncInfoBrand, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoArea)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoArea);
+                            db.Execute(insertSyncInfoArea, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoDept)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoDept);
+                            db.Execute(insertSyncInfoDept, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoStore)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoStore);
+                            db.Execute(insertSyncInfoStore, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoMeal_time)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoMeal_time);
+                            db.Execute(insertSyncInfoMeal_time, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoUnit)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoUnit);
+                            db.Execute(insertSyncInfoUnit, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoDish_type)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoDish_type);
+                            db.Execute(insertSyncInfoDish_type, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoDish)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoDish);
+                            db.Execute(insertSyncInfoDish, paramDateTime);
                         }
                         if (db.ExecuteScalar(selectSyncInfoOrder)?.ToString() == null)
                         {
-                            db.Execute(insertSyncInfoOrder);
+                            db.Execute(insertSyncInfoOrder, paramDateTime);
                         }
                         #endregion
                     }

@@ -56,7 +56,7 @@ namespace DSTool
             configInfo.Brand_name = Common.GetAppConfig("brand_name")?.ToString();
             configInfo.Brand_status = Common.GetAppConfig("brand_status")?.ToString();
             configInfo.Brand_subject = Common.GetAppConfig("brand_subject")?.ToString();
-            configInfo.Brand_posid =Common.GetAppConfig("brand_posid");
+            configInfo.Brand_posid = Common.GetAppConfig("brand_posid");
             configInfo.Brand_seq = Convert.ToInt32(Common.GetAppConfig("brand_seq"));
 
             configInfo.Area_table = Common.GetAppConfig("area_table")?.ToString();
@@ -78,6 +78,7 @@ namespace DSTool
             configInfo.Dept_sid = Common.GetAppConfig("dept_sid");
             configInfo.Dept_sno = Common.GetAppConfig("dept_sno");
             configInfo.Dept_posid = Convert.ToInt32(Common.GetAppConfig("dept_posid"));
+            configInfo.StartTime = DateTime.TryParse(Common.GetAppConfig("starttime")?.ToString(), out DateTime dateTime) == false ? DateTime.Now : dateTime;
 
             configInfo.Mysql_connectionstring = ConfigurationManager.ConnectionStrings["mysql_connectionstring"]?.ToString();
             configInfo.Sqlserver_connectionstring = ConfigurationManager.ConnectionStrings["sqlserver_connectionstring"]?.ToString();
@@ -139,5 +140,6 @@ namespace DSTool
         public string Mysql_connectionstring { get; set; }
         public string Sqlserver_connectionstring { get; set; }
         public static string ConnectionString { get; set; }
+        public DateTime StartTime { get; set; }
     }
 }

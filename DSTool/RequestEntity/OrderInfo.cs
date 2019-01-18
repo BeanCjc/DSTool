@@ -79,9 +79,9 @@ namespace DSTool.RequestEntity
         /// <param name="mains"></param>
         /// <param name="deptId"></param>
         /// <returns></returns>
-        public static List<Abc> GetListData(List<XS_PZ_ZB> mains, int deptId)
+        public static List<OrderInfoList> GetListData(List<XS_PZ_ZB> mains, int deptId)
         {
-            var result = new List<Abc>();
+            var result = new List<OrderInfoList>();
             foreach (var main in mains)
             {
                 var orderItemList = XS_PZ.GetListByOrderId(main.JYH.Trim());
@@ -107,7 +107,7 @@ namespace DSTool.RequestEntity
 
                     });
                 }
-                var ddd = result.FirstOrDefault(t => t.Sid == sid);
+                var ddd = result.FirstOrDefault(t => t.Sid == sid&&t.Date== Common.IntToDateTime(main.CZRQ, main.CZSJ).ToString("yyyy-MM-dd"));
                 if (ddd != null)
                 {
                     ddd.OrderInfos.Add(new OrderInfo()
@@ -131,9 +131,10 @@ namespace DSTool.RequestEntity
                 }
                 else
                 {
-                    result.Add(new Abc()
+                    result.Add(new OrderInfoList()
                     {
                         Sid = sid,
+                        Date= Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS).ToString("yyyy-MM-dd"),
                         OrderInfos = new List<OrderInfo>()
                         {
                             new OrderInfo()
@@ -161,10 +162,14 @@ namespace DSTool.RequestEntity
             return result;
         }
     }
-    class Abc
+    class OrderInfoList
     {
-        public List<OrderInfo> OrderInfos { get; set; }
         public int Sid { get; set; }
+
+        public string Date { get; set; }
+
+        public List<OrderInfo> OrderInfos { get; set; }
+        
         public List<DeleteObject> IdLists { get; set; }
     }
 }
