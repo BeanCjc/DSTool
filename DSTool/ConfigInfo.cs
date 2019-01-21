@@ -9,22 +9,26 @@ namespace DSTool
 {
     public class ConfigInfo
     {
-        private static ConfigInfo Instance;
+        private static volatile ConfigInfo Instance;
+        private static readonly object obj = new object();
         private ConfigInfo()
         {
 
         }
-        public static ConfigInfo CreateInstance
+        public static ConfigInfo CreateInstance()
         {
-            get
+            if (Instance == null)
             {
-                if (Instance == null)
+                lock (obj)
                 {
-                    Instance = new ConfigInfo();
-                    Instance.Refresh(Instance);
+                    if (Instance == null)
+                    {
+                        Instance = new ConfigInfo();
+                        Instance.Refresh(Instance);
+                    }
                 }
-                return Instance.Refresh(Instance);
             }
+            return Instance.Refresh(Instance);
         }
 
         private ConfigInfo Refresh(ConfigInfo configInfo)
@@ -82,7 +86,7 @@ namespace DSTool
 
             configInfo.Mysql_connectionstring = ConfigurationManager.ConnectionStrings["mysql_connectionstring"]?.ToString();
             configInfo.Sqlserver_connectionstring = ConfigurationManager.ConnectionStrings["sqlserver_connectionstring"]?.ToString();
-            ConfigInfo.ConnectionString = !string.IsNullOrEmpty(configInfo.Sqlserver_connectionstring) ? configInfo.Sqlserver_connectionstring : configInfo.Mysql_connectionstring;
+            ConnectionString = !string.IsNullOrEmpty(configInfo.Sqlserver_connectionstring) ? configInfo.Sqlserver_connectionstring : configInfo.Mysql_connectionstring;
             return configInfo;
         }
         public string Apiurl_addbrand { get; set; }

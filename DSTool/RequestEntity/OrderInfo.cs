@@ -19,10 +19,10 @@ namespace DSTool.RequestEntity
         /// </summary>
         public List<O_order_item_history> O_Order_Item { get; set; }
 
-        /// <summary>
-        /// 日结
-        /// </summary>
-        public int DayDone { get; set; } = 1;
+        ///// <summary>
+        ///// 日结
+        ///// </summary>
+        //public int DayDone { get; set; } = 1;
 
         public static OrderInfo GetData(XS_PZ_ZB main, int deptId)
         {
@@ -53,6 +53,7 @@ namespace DSTool.RequestEntity
 
                 });
             }
+            var cost = XS_PZ_ZB.GetCostById(main.JYH.Trim());
             return new OrderInfo()
             {
                 O_Order = new O_order_history()
@@ -61,7 +62,7 @@ namespace DSTool.RequestEntity
                     OrderStatus = 3,//必须字段
                     People = main.RS,//必须字段
                     Total = main.XSJE,//必须字段
-                    Cost = main.XSJE,//必须字段
+                    Cost = cost == 0 ? main.XSJE : cost,//必须字段
                     NewTime = Common.IntToDateTime(main.CZRQ, main.CZSJ),//必须字段
                     CheckoutTime = Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS),//必须字段
                     OrderType = "1",//必须字段
@@ -107,7 +108,8 @@ namespace DSTool.RequestEntity
 
                     });
                 }
-                var ddd = result.FirstOrDefault(t => t.Sid == sid&&t.Date== Common.IntToDateTime(main.CZRQ, main.CZSJ).ToString("yyyy-MM-dd"));
+                var cost = XS_PZ_ZB.GetCostById(main.JYH.Trim());
+                var ddd = result.FirstOrDefault(t => t.Sid == sid && t.Date == Common.IntToDateTime(main.CZRQ, main.CZSJ).ToString("yyyy-MM-dd"));
                 if (ddd != null)
                 {
                     ddd.OrderInfos.Add(new OrderInfo()
@@ -118,7 +120,7 @@ namespace DSTool.RequestEntity
                             OrderStatus = 3,//必须字段
                             People = main.RS,//必须字段
                             Total = main.XSJE,//必须字段
-                            Cost = main.XSJE,//必须字段
+                            Cost = cost == 0 ? main.XSJE : cost,//必须字段
                             NewTime = Common.IntToDateTime(main.CZRQ, main.CZSJ),//必须字段
                             CheckoutTime = Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS),//必须字段
                             OrderType = "1",//必须字段
@@ -134,7 +136,7 @@ namespace DSTool.RequestEntity
                     result.Add(new OrderInfoList()
                     {
                         Sid = sid,
-                        Date= Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS).ToString("yyyy-MM-dd"),
+                        Date = Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS).ToString("yyyy-MM-dd"),
                         OrderInfos = new List<OrderInfo>()
                         {
                             new OrderInfo()
@@ -145,7 +147,7 @@ namespace DSTool.RequestEntity
                                     OrderStatus = 3,//必须字段
                                     People = main.RS,//必须字段
                                     Total = main.XSJE,//必须字段
-                                    Cost = main.XSJE,//必须字段
+                                    Cost = cost== 0 ? main.XSJE : cost,//必须字段
                                     NewTime = Common.IntToDateTime(main.CZRQ, main.CZSJ),//必须字段
                                     CheckoutTime = Common.IntToDateTime(main.CZRQ_XS, main.CZSJ_XS),//必须字段
                                     OrderType = "1",//必须字段
@@ -169,7 +171,7 @@ namespace DSTool.RequestEntity
         public string Date { get; set; }
 
         public List<OrderInfo> OrderInfos { get; set; }
-        
+
         public List<DeleteObject> IdLists { get; set; }
     }
 }

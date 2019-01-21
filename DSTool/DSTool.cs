@@ -28,7 +28,7 @@ namespace DSTool
         {
             InitializeComponent();
         }
-        static ConfigInfo ConfigInfo = ConfigInfo.CreateInstance;
+        static ConfigInfo ConfigInfo = ConfigInfo.CreateInstance();
         static string connectionString = ConfigInfo.ConnectionString;
         static string default_tablename_brand = Common.GetAppConfig("brand_table")?.ToString();
         static string default_tablename_area = Common.GetAppConfig("area_table")?.ToString();
@@ -60,7 +60,7 @@ namespace DSTool
             };
             watcher.Changed += (obj, fileSystemArgs) =>
             {
-                ConfigInfo = ConfigInfo.CreateInstance;
+                ConfigInfo = ConfigInfo.CreateInstance();
                 InitData();
 
             };//监听配置文件,刷新数据库默认数据(品牌,区域,部门)
@@ -1411,6 +1411,24 @@ namespace DSTool
                         SyncInfo.UpdateByTableName("order");
                     }
 
+                    //是否日结
+                    var d = DateTime.Now;
+                    if (d.AddMinutes(-125).ToString("yyyyMMdd").CompareTo(d.AddMinutes(-120).ToString("yyyyMMdd")) < 0)
+                    {
+                        var paramData = "arr={\"daydone\":1}";
+                        var storeIds = SyncInfo.GetInfoByTableName("store");
+                        if (storeIds != null)
+                        {
+                            var storeIdList = storeIds.IdList.Split(';');
+                            if (storeIdList.Length > 0)
+                            {
+                                foreach (var id in storeIdList)
+                                {
+                                    var result_add = Common.Post(ConfigInfo.Apiurl_addordermain + $"&sid={id}&day={d.AddMinutes(-125).ToString("yyyy-MM-dd")}", paramData);
+                                }
+                            }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -274,5 +274,15 @@ namespace DSTool.DbData
                 return db.Query<XS_PZ_ZB>(sql, param).ToList();
             }
         }
+        public static decimal GetCostById(string id)
+        {
+            var sql = @"select SUM(b.ssje) from xs_pz_zb a inner join xs_pz_jz b on a.jyh=b.jyh inner join dm_fkfs c on b.fkfsdm=c.fkfsdm where c.ssbj=1 and a.jyh=@jyh";
+            var param = new DynamicParameters();
+            param.Add("jyh", id);
+            using (var db = new SqlConnection(ConfigInfo.ConnectionString))
+            {
+                return Convert.ToDecimal(db.ExecuteScalar(sql, param)?.ToString() ?? "0");
+            }
+        }
     }
 }

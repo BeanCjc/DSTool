@@ -28,6 +28,7 @@ C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Dapper.xml
 C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Google.Protobuf.xml
 C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Newtonsoft.Json.pdb
 C:\Users\Administrator\source\repos\DSTool\DSTool\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csprojAssemblyReference.cache
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.MSTool.resources
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.Properties.Resources.resources
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.GenerateResource.cache
@@ -35,4 +36,3 @@ C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.CoreCo
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csproj.CopyComplete
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.exe
 C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.pdb
-C:\Users\Administrator\source\repos\DSTool\DSTool\obj\Debug\DSTool.csprojAssemblyReference.cache

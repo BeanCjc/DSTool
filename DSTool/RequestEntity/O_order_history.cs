@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 
 namespace DSTool.RequestEntity
 {
@@ -155,5 +157,6 @@ namespace DSTool.RequestEntity
         /// 标记问题订单 NO
         /// </summary>
         public int Flag { get; set; } = 0;
+
     }
 }
